@@ -1,14 +1,6 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
-import MyApp from "./MyApp" // file's extension converted to js regardless by Vite
-import Table from "./Table"
-import "./main.css";
+import MyApp from "./MyApp";
 
-// create the actual container
-const container = document.getElementById("root");
-
-// create a root
-const root = ReactDOMClient.createRoot(container);
-
-// Initial render
+const root = ReactDOMClient.createRoot(document.getElementById("root"));
 root.render(<MyApp />);
