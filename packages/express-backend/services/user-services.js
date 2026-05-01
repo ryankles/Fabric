@@ -3,7 +3,6 @@ import userModel from "../models/user.js";
 
 mongoose.set("debug", true);
 
-
 function getUsers(name, job) {
   if (name != undefined && job != undefined) {
     return userModel.find({ name: name, job: job });
@@ -29,7 +28,7 @@ function addUser(user) {
 
 // returns promise for result of deletion
 function removeUserById(id) {
-    return userModel.findByIdAndDelete(id);
+  return userModel.findByIdAndDelete(id);
 }
 
 function findUserByName(name) {

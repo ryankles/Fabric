@@ -5,9 +5,17 @@
   "main": "backend.js",
   "scripts": {
     "dev": "npx nodemon backend.js",
-    "start": "node backend.js"
+    "start": "node backend.js",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ../../.prettierrc"
   },
   "dependencies": {
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@eslint/compat": "^2.0.5",
+    "@eslint/eslintrc": "^3.3.5",
+    "@eslint/js": "^10.0.1",
+    "cors": "^2.8.6",
+    "eslint": "^10.3.0"
   }
 }
