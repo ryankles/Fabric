@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import AnnouncementsRemindersPage from "./pages/AnnouncementsRemindersPage";
 import MaterialsListPage from "./pages/MaterialsListPage";
+import CalendarPage from "./pages/CalendarPage";
+import GradesPage from "./pages/GradesPage";
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -84,16 +86,39 @@ function MyApp() {
             >
               Materials
             </button>
+            <button
+              className={
+                activePage === "calendar"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("calendar")}
+            >
+              Calendar
+            </button>
+            <button
+              className={
+                activePage === "grades"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("grades")}
+            >
+              Grades
+            </button>
           </nav>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        {activePage === "announcements" ? (
+        {activePage === "announcements" && (
           <AnnouncementsRemindersPage view={view} />
-        ) : (
-          <MaterialsListPage view={view} />
         )}
+        {activePage === "materials" && <MaterialsListPage view={view} />}
+        {activePage === "calendar" && <CalendarPage view={view} />}
+        {activePage === "grades" && <GradesPage view={view} />}
       </main>
     </div>
   );
