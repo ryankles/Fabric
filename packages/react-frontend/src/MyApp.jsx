@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
+import Login from "./Login";
+
 import AnnouncementsRemindersPage from "./pages/AnnouncementsRemindersPage";
 import MaterialsListPage from "./pages/MaterialsListPage";
 import CalendarPage from "./pages/CalendarPage";
@@ -15,43 +19,12 @@ function getStoredToken() {
   );
 }
 
-function MyApp() {
+
+
+function Dashboard({ user, logout }) {
   const [activePage, setActivePage] = useState("home");
-  // We'll have to replace this with data from actual auth
-  const [user, setUser] = useState({
-    name: "Demo Student",
-    role: "student"
-  });
+  
   const view = user.role === "teacher" ? "teacher" : "student";
-
-  useEffect(() => {
-    const token = getStoredToken();
-
-    if (!token) {
-      return;
-    }
-
-    async function loadUser() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const currentUser = await response.json();
-        setUser(currentUser);
-      } catch {
-        // Keep the demo student view if the backend is not running yet.
-      }
-    }
-
-    loadUser();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -134,6 +107,186 @@ function MyApp() {
         {activePage === "grades" && <GradesPage view={view} />}
       </main>
     </div>
+  );
+}
+        
+function MyApp() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [message, setMessage] = useState("");
+  // We'll have to replace this with data from actual auth
+  const [user, setUser] = useState({
+    name: "Demo Student",
+    role: "student"
+  });
+
+  // On mount, try fetching items to see if we have a valid cookie
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  // --- API calls (credentials: "include" sends the cookie automatically) ---
+  function fetchItems() {
+    fetch(`${API_BASE_URL}/api/auth/me`, {
+      credentials: "include"
+    })
+      .then((res) => {
+        if (res.status === 401) {
+          setIsLoggedIn(false);
+          return undefined;
+        }
+        return res.status === 200 ? res.json() : undefined;
+      })
+      .then((json) => {
+        if (json) {
+          setItems(json);
+          setIsLoggedIn(true);
+        }
+      })
+      .catch((error) => console.error("Fetch items error:", error));
+  }
+
+  function addItem(person) {
+    fetch(`${API_PREFIX}/api/items`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ title: person.name })
+    })
+      .then((res) => {
+        if (res.status === 201) return res.json();
+        return undefined;
+      })
+      .then((json) => {
+        if (json) setItems([...items, json]);
+      })
+      .catch((error) => console.error("Add item error:", error));
+  }
+
+  function removeItem(index) {
+    const item = items[index];
+    fetch(`${API_PREFIX}/api/items/${item._id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          setItems(items.filter((_, i) => i !== index));
+        }
+      })
+      .catch((error) => console.error("Delete item error:", error));
+  }
+
+  // --- Auth actions ---
+  function loginUser(creds) {
+    fetch(`${API_PREFIX}/api/auth/signin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(creds)
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          setIsLoggedIn(true);
+          setMessage("");
+          fetchItems();
+        } else {
+          setMessage("Login failed. Check your email and password.");
+        }
+      })
+      .catch((error) => setMessage(`Login error: ${error}`));
+  }
+
+  function signupUser(creds) {
+    fetch(`${API_PREFIX}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(creds)
+    })
+      .then((res) => {
+        if (res.status === 201) {
+          setIsLoggedIn(true);
+          setMessage("");
+          fetchItems();
+        } else if (res.status === 409) {
+          setMessage("That email is already in use.");
+        } else {
+          setMessage("Signup failed. Please try again.");
+        }
+      })
+      .catch((error) => setMessage(`Signup error: ${error}`));
+  }
+
+  function logout() {
+    fetch(`${API_PREFIX}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include"
+    })
+      .then(() => {
+        setIsLoggedIn(false);
+        setItems([]);
+        setMessage("");
+      })
+      .catch((error) => console.error("Logout error:", error));
+  }
+
+  return (
+    <BrowserRouter>
+      <div className="container">
+        {isLoggedIn && (
+          <header>
+            <button onClick={logout}>Log Out</button>
+          </header>
+        )}
+
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              isLoggedIn ? (
+                <Navigate to="/" />
+              ) : (
+                <Login
+                  handleSubmit={loginUser}
+                  buttonLabel="Log In"
+                  message={message}
+                  toggleText="Don't have an account?"
+                  toggleLink="/signup"
+                  toggleLabel="Sign Up"
+                />
+              )
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              isLoggedIn ? (
+                <Navigate to="/" />
+              ) : (
+                <Login
+                  handleSubmit={signupUser}
+                  buttonLabel="Sign Up"
+                  message={message}
+                  toggleText="Already have an account?"
+                  toggleLink="/login"
+                  toggleLabel="Log In"
+                />
+              )
+            }
+          />
+          <Route
+            path="/"
+            element={
+              isLoggedIn ? (
+              <Dashboard user={user} logout={logout} />
+               ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
+        </Routes>
+      </div>
+    </BrowserRouter>
   );
 }
 
