@@ -3,6 +3,7 @@ import AnnouncementsRemindersPage from "./pages/AnnouncementsRemindersPage";
 import MaterialsListPage from "./pages/MaterialsListPage";
 import CalendarPage from "./pages/CalendarPage";
 import GradesPage from "./pages/GradesPage";
+import HomePage from "./pages/HomePage";
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -15,7 +16,7 @@ function getStoredToken() {
 }
 
 function MyApp() {
-  const [activePage, setActivePage] = useState("announcements");
+  const [activePage, setActivePage] = useState("home");
   // We'll have to replace this with data from actual auth
   const [user, setUser] = useState({
     name: "Demo Student",
@@ -66,6 +67,17 @@ function MyApp() {
           <nav className="flex flex-wrap gap-1">
             <button
               className={
+                activePage === "home"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("home")}
+            >
+              Home
+            </button>
+            <button
+              className={
                 activePage === "announcements"
                   ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
                   : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -113,6 +125,7 @@ function MyApp() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
+        {activePage === "home" && <HomePage view={view} />}
         {activePage === "announcements" && (
           <AnnouncementsRemindersPage view={view} />
         )}
