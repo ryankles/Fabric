@@ -1,17 +1,23 @@
 import jwt from "jsonwebtoken";
 
 /**
- * Verifies Bearer JWT and sets req.userId for authorization-scoped handlers.
- * Expects tokens signed by the auth teammate with payload: { userId: string }.
+ * Verifies JWT from cookie (or Bearer header as fallback)
+ * and sets req.userId for authorization-scoped handlers.
  */
 export function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
+  // Try cookie first, then fall back to Authorization header
+  let token = req.cookies?.token;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Missing or invalid Authorization header" });
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      token = authHeader.slice("Bearer ".length);
+    }
   }
 
-  const token = authHeader.slice("Bearer ".length);
+  if (!token) {
+    return res.status(401).json({ error: "Missing authentication" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
