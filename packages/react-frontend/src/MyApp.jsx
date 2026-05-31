@@ -19,8 +19,6 @@ function getStoredToken() {
   );
 }
 
-
-
 function Dashboard({ user, logout }) {
   const [activePage, setActivePage] = useState("home");
   
@@ -110,14 +108,14 @@ function Dashboard({ user, logout }) {
   );
 }
         
+
+
 function MyApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
-  // We'll have to replace this with data from actual auth
-  const [user, setUser] = useState({
-    name: "Demo Student",
-    role: "student"
-  });
+  const [items, setItems] = useState([]);
+  const [user, setUser] = useState([]);
+
 
   // On mount, try fetching items to see if we have a valid cookie
   useEffect(() => {
@@ -146,7 +144,7 @@ function MyApp() {
   }
 
   function addItem(person) {
-    fetch(`${API_PREFIX}/api/items`, {
+    fetch(`${API_BASE_URL}/api/items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -164,7 +162,7 @@ function MyApp() {
 
   function removeItem(index) {
     const item = items[index];
-    fetch(`${API_PREFIX}/api/items/${item._id}`, {
+    fetch(`${API_BASE_URL}/api/items/${item._id}`, {
       method: "DELETE",
       credentials: "include"
     })
@@ -178,7 +176,7 @@ function MyApp() {
 
   // --- Auth actions ---
   function loginUser(creds) {
-    fetch(`${API_PREFIX}/api/auth/signin`, {
+    fetch(`${API_BASE_URL}/api/auth/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -197,7 +195,7 @@ function MyApp() {
   }
 
   function signupUser(creds) {
-    fetch(`${API_PREFIX}/api/auth/signup`, {
+    fetch(`${API_BASE_URL}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -218,7 +216,7 @@ function MyApp() {
   }
 
   function logout() {
-    fetch(`${API_PREFIX}/api/auth/logout`, {
+    fetch(`${API_BASE_URL}/api/auth/logout`, {
       method: "POST",
       credentials: "include"
     })
