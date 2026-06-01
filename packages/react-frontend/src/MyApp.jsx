@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
 import Table from "./Table";
 import Form from "./Form";
 import Login from "./Login";
@@ -34,7 +39,9 @@ function MyApp() {
           setIsLoggedIn(true);
         }
       })
-      .catch((error) => console.error("Fetch items error:", error));
+      .catch((error) =>
+        console.error("Fetch items error:", error)
+      );
   }
 
   function addItem(person) {
@@ -51,7 +58,9 @@ function MyApp() {
       .then((json) => {
         if (json) setItems([...items, json]);
       })
-      .catch((error) => console.error("Add item error:", error));
+      .catch((error) =>
+        console.error("Add item error:", error)
+      );
   }
 
   function removeItem(index) {
@@ -65,7 +74,9 @@ function MyApp() {
           setItems(items.filter((_, i) => i !== index));
         }
       })
-      .catch((error) => console.error("Delete item error:", error));
+      .catch((error) =>
+        console.error("Delete item error:", error)
+      );
   }
 
   // --- Auth actions ---
@@ -82,7 +93,9 @@ function MyApp() {
           setMessage("");
           fetchItems();
         } else {
-          setMessage("Login failed. Check your email and password.");
+          setMessage(
+            "Login failed. Check your email and password."
+          );
         }
       })
       .catch((error) => setMessage(`Login error: ${error}`));
@@ -172,7 +185,10 @@ function MyApp() {
               isLoggedIn ? (
                 <>
                   <Form handleSubmit={addItem} />
-                  <Table charData={items} removeChar={removeItem} />
+                  <Table
+                    charData={items}
+                    removeChar={removeItem}
+                  />
                 </>
               ) : (
                 <Navigate to="/login" />

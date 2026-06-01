@@ -42,7 +42,9 @@ function Login(props) {
           onClick={submitForm}
         />
       </form>
-      {props.message && <p className="auth-message">{props.message}</p>}
+      {props.message && (
+        <p className="auth-message">{props.message}</p>
+      )}
       <p className="auth-toggle">
         {props.toggleText}{" "}
         <a href={props.toggleLink}>{props.toggleLabel}</a>
