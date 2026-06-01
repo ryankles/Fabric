@@ -10,7 +10,7 @@ import GradesPage from "./pages/GradesPage";
 import HomePage from "./pages/HomePage";
 
 const API_BASE_URL = "http://localhost:8000";
-
+/*
 function getStoredToken() {
   return (
     window.localStorage.getItem("fabricToken") ||
@@ -18,7 +18,7 @@ function getStoredToken() {
     ""
   );
 }
-
+*/
 function Dashboard({ user, logout }) {
   const [activePage, setActivePage] = useState("home");
   
@@ -91,6 +91,7 @@ function Dashboard({ user, logout }) {
             >
               Grades
             </button>
+            <button onClick={logout}>Log Out</button>
           </nav>
         </div>
       </header>
@@ -114,7 +115,7 @@ function MyApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
   const [items, setItems] = useState([]);
-  const [user, setUser] = useState([]);
+  //const [user, setUser] = useState([]);
 
 
   // On mount, try fetching items to see if we have a valid cookie
@@ -142,7 +143,7 @@ function MyApp() {
       })
       .catch((error) => console.error("Fetch items error:", error));
   }
-
+/*
   function addItem(person) {
     fetch(`${API_BASE_URL}/api/items`, {
       method: "POST",
@@ -173,7 +174,7 @@ function MyApp() {
       })
       .catch((error) => console.error("Delete item error:", error));
   }
-
+*/
   // --- Auth actions ---
   function loginUser(creds) {
     fetch(`${API_BASE_URL}/api/auth/signin`, {
@@ -215,6 +216,7 @@ function MyApp() {
       .catch((error) => setMessage(`Signup error: ${error}`));
   }
 
+	
   function logout() {
     fetch(`${API_BASE_URL}/api/auth/logout`, {
       method: "POST",
@@ -231,11 +233,6 @@ function MyApp() {
   return (
     <BrowserRouter>
       <div className="container">
-        {isLoggedIn && (
-          <header>
-            <button onClick={logout}>Log Out</button>
-          </header>
-        )}
 
         <Routes>
           <Route
@@ -276,7 +273,7 @@ function MyApp() {
             path="/"
             element={
               isLoggedIn ? (
-              <Dashboard user={user} logout={logout} />
+              <Dashboard user={items} logout={logout} />
                ) : (
                 <Navigate to="/login" />
               )
