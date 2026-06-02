@@ -9,7 +9,8 @@ import Table from "./Table";
 import Form from "./Form";
 import Login from "./Login";
 
-const API_PREFIX = "http://localhost:8000";
+const API_PREFIX =
+  import.meta.env.VITE_API_PREFIX || "http://localhost:8000";
 
 function MyApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
