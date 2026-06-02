@@ -1,21 +1,124 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   BrowserRouter,
   Routes,
   Route,
   Navigate
 } from "react-router-dom";
-import Table from "./Table";
-import Form from "./Form";
+
 import Login from "./Login";
 
-const API_PREFIX =
-  import.meta.env.VITE_API_PREFIX || "http://localhost:8000";
+import AnnouncementsRemindersPage from "./pages/AnnouncementsRemindersPage";
+import MaterialsListPage from "./pages/MaterialsListPage";
+import CalendarPage from "./pages/CalendarPage";
+import GradesPage from "./pages/GradesPage";
+import HomePage from "./pages/HomePage";
+
+const API_BASE_URL = "http://localhost:8000";
+/*
+function getStoredToken() {
+  return (
+    window.localStorage.getItem("fabricToken") ||
+    window.localStorage.getItem("token") ||
+    ""
+  );
+}
+*/
+function Dashboard({ user, logout }) {
+  const [activePage, setActivePage] = useState("home");
+
+  const view = user.role === "teacher" ? "teacher" : "student";
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
+          <div>
+            <h1 className="text-primary">Fabric</h1>
+            <p className="text-sm text-muted-foreground">
+              {user.name} ·{" "}
+              {view === "teacher" ? "Teacher" : "Student"}
+            </p>
+          </div>
+
+          <nav className="flex flex-wrap gap-1">
+            <button
+              className={
+                activePage === "home"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("home")}>
+              Home
+            </button>
+            <button
+              className={
+                activePage === "announcements"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("announcements")}>
+              Announcements
+            </button>
+            <button
+              className={
+                activePage === "materials"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("materials")}>
+              Materials
+            </button>
+            <button
+              className={
+                activePage === "calendar"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("calendar")}>
+              Calendar
+            </button>
+            <button
+              className={
+                activePage === "grades"
+                  ? "rounded-lg bg-primary px-4 py-2 text-primary-foreground"
+                  : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+              type="button"
+              onClick={() => setActivePage("grades")}>
+              Grades
+            </button>
+            <button onClick={logout}>Log Out</button>
+          </nav>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {activePage === "home" && <HomePage view={view} />}
+        {activePage === "announcements" && (
+          <AnnouncementsRemindersPage view={view} />
+        )}
+        {activePage === "materials" && (
+          <MaterialsListPage view={view} />
+        )}
+        {activePage === "calendar" && (
+          <CalendarPage view={view} />
+        )}
+        {activePage === "grades" && <GradesPage view={view} />}
+      </main>
+    </div>
+  );
+}
 
 function MyApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
   const [items, setItems] = useState([]);
+  //const [user, setUser] = useState([]);
 
   // On mount, try fetching items to see if we have a valid cookie
   useEffect(() => {
@@ -24,7 +127,7 @@ function MyApp() {
 
   // --- API calls (credentials: "include" sends the cookie automatically) ---
   function fetchItems() {
-    fetch(`${API_PREFIX}/api/items`, {
+    fetch(`${API_BASE_URL}/api/auth/me`, {
       credentials: "include"
     })
       .then((res) => {
@@ -44,9 +147,9 @@ function MyApp() {
         console.error("Fetch items error:", error)
       );
   }
-
+  /*
   function addItem(person) {
-    fetch(`${API_PREFIX}/api/items`, {
+    fetch(`${API_BASE_URL}/api/items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -66,7 +169,7 @@ function MyApp() {
 
   function removeItem(index) {
     const item = items[index];
-    fetch(`${API_PREFIX}/api/items/${item._id}`, {
+    fetch(`${API_BASE_URL}/api/items/${item._id}`, {
       method: "DELETE",
       credentials: "include"
     })
@@ -79,10 +182,10 @@ function MyApp() {
         console.error("Delete item error:", error)
       );
   }
-
+*/
   // --- Auth actions ---
   function loginUser(creds) {
-    fetch(`${API_PREFIX}/auth/signin`, {
+    fetch(`${API_BASE_URL}/api/auth/signin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -103,7 +206,7 @@ function MyApp() {
   }
 
   function signupUser(creds) {
-    fetch(`${API_PREFIX}/auth/signup`, {
+    fetch(`${API_BASE_URL}/api/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -124,7 +227,7 @@ function MyApp() {
   }
 
   function logout() {
-    fetch(`${API_PREFIX}/auth/logout`, {
+    fetch(`${API_BASE_URL}/api/auth/logout`, {
       method: "POST",
       credentials: "include"
     })
@@ -139,12 +242,6 @@ function MyApp() {
   return (
     <BrowserRouter>
       <div className="container">
-        {isLoggedIn && (
-          <header>
-            <button onClick={logout}>Log Out</button>
-          </header>
-        )}
-
         <Routes>
           <Route
             path="/login"
@@ -184,13 +281,7 @@ function MyApp() {
             path="/"
             element={
               isLoggedIn ? (
-                <>
-                  <Form handleSubmit={addItem} />
-                  <Table
-                    charData={items}
-                    removeChar={removeItem}
-                  />
-                </>
+                <Dashboard user={items} logout={logout} />
               ) : (
                 <Navigate to="/login" />
               )
