@@ -1,4 +1,4 @@
-export function HomePage({ view }) {
+export function HomePage({ view, user }) {
   const studentData = {
     name: "Alex Johnson",
     grade: "10th Grade",
@@ -27,10 +27,7 @@ export function HomePage({ view }) {
     <div className="space-y-6">
       <div className="bg-card rounded-lg p-6 border border-border">
         <h2 className="mb-4">
-          Welcome back,{" "}
-          {view === "student"
-            ? studentData.name
-            : teacherData.name}
+          Welcome back, {user?.name || "User"}
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
