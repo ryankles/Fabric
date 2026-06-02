@@ -28,7 +28,8 @@ const startingMaterials = [
     courseId: "physics",
     courseTitle: "Physics",
     title: "Motion Simulation",
-    description: "Practice interpreting velocity and acceleration graphs.",
+    description:
+      "Practice interpreting velocity and acceleration graphs.",
     type: "link",
     url: "https://example.com/motion-simulation",
     content: "",
@@ -43,7 +44,8 @@ const startingMaterials = [
     description: "Primary source reading packet.",
     type: "text",
     url: "",
-    content: "Read pages 4-12 and answer the two discussion questions.",
+    content:
+      "Read pages 4-12 and answer the two discussion questions.",
     createdBy: "Ms. Davis",
     createdAt: "2026-05-20"
   },
@@ -66,11 +68,17 @@ function getCourseTitle(courseId) {
   return course ? course.title : "Class";
 }
 
-function filterMaterials(materials, selectedCourse, selectedType) {
+function filterMaterials(
+  materials,
+  selectedCourse,
+  selectedType
+) {
   return materials.filter((material) => {
     const matchesCourse =
-      selectedCourse === "all" || material.courseId === selectedCourse;
-    const matchesType = selectedType === "all" || material.type === selectedType;
+      selectedCourse === "all" ||
+      material.courseId === selectedCourse;
+    const matchesType =
+      selectedType === "all" || material.type === selectedType;
 
     return matchesCourse && matchesType;
   });
@@ -98,17 +106,23 @@ function MaterialCard({ material, onDelete }) {
   return (
     <article className="rounded-lg bg-muted p-4">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className={typeBadgeClass(material.type)}>{material.type}</span>
+        <span className={typeBadgeClass(material.type)}>
+          {material.type}
+        </span>
         <span className="text-sm text-muted-foreground">
           {material.courseTitle}
         </span>
       </div>
 
       <h3>{material.title}</h3>
-      <p className="mt-1 text-muted-foreground">{material.description}</p>
+      <p className="mt-1 text-muted-foreground">
+        {material.description}
+      </p>
 
       {material.type === "link" && material.url ? (
-        <a className="mt-3 block break-words text-primary" href={material.url}>
+        <a
+          className="mt-3 block break-words text-primary"
+          href={material.url}>
           {material.url}
         </a>
       ) : null}
@@ -127,8 +141,7 @@ function MaterialCard({ material, onDelete }) {
           <button
             className="text-destructive hover:underline"
             type="button"
-            onClick={() => onDelete(material.id)}
-          >
+            onClick={() => onDelete(material.id)}>
             Delete
           </button>
         ) : null}
@@ -153,11 +166,12 @@ function StudentMaterialsView() {
         <div className="flex flex-wrap gap-2">
           {courses.map((course) => (
             <button
-              className={filterButtonClass(selectedCourse === course.id)}
+              className={filterButtonClass(
+                selectedCourse === course.id
+              )}
               key={course.id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}
-            >
+              onClick={() => setSelectedCourse(course.id)}>
               {course.title}
             </button>
           ))}
@@ -170,8 +184,9 @@ function StudentMaterialsView() {
           <select
             className="rounded-lg border border-border bg-input-background px-3 py-2 text-foreground"
             value={selectedType}
-            onChange={(event) => setSelectedType(event.target.value)}
-          >
+            onChange={(event) =>
+              setSelectedType(event.target.value)
+            }>
             <option value="all">All types</option>
             <option value="link">Links</option>
             <option value="text">Text</option>
@@ -181,7 +196,10 @@ function StudentMaterialsView() {
 
         <div className="grid gap-3 md:grid-cols-2">
           {visibleMaterials.map((material) => (
-            <MaterialCard key={material.id} material={material} />
+            <MaterialCard
+              key={material.id}
+              material={material}
+            />
           ))}
         </div>
       </section>
@@ -200,7 +218,11 @@ function TeacherMaterialsView() {
     url: "",
     content: ""
   });
-  const visibleMaterials = filterMaterials(materials, selectedCourse, "all");
+  const visibleMaterials = filterMaterials(
+    materials,
+    selectedCourse,
+    "all"
+  );
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -239,7 +261,9 @@ function TeacherMaterialsView() {
   }
 
   function deleteMaterial(id) {
-    setMaterials(materials.filter((material) => material.id !== id));
+    setMaterials(
+      materials.filter((material) => material.id !== id)
+    );
   }
 
   return (
@@ -249,11 +273,12 @@ function TeacherMaterialsView() {
         <div className="flex flex-wrap gap-2">
           {courses.map((course) => (
             <button
-              className={filterButtonClass(selectedCourse === course.id)}
+              className={filterButtonClass(
+                selectedCourse === course.id
+              )}
               key={course.id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}
-            >
+              onClick={() => setSelectedCourse(course.id)}>
               {course.title}
             </button>
           ))}
@@ -276,8 +301,7 @@ function TeacherMaterialsView() {
 
         <form
           className="rounded-lg border border-border bg-card p-6"
-          onSubmit={addMaterial}
-        >
+          onSubmit={addMaterial}>
           <h2 className="mb-4">Add Material</h2>
 
           <label className="mb-3 block">
@@ -286,8 +310,7 @@ function TeacherMaterialsView() {
               className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="courseId"
               value={form.courseId}
-              onChange={handleChange}
-            >
+              onChange={handleChange}>
               {courses
                 .filter((course) => course.id !== "all")
                 .map((course) => (
@@ -304,8 +327,7 @@ function TeacherMaterialsView() {
               className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="type"
               value={form.type}
-              onChange={handleChange}
-            >
+              onChange={handleChange}>
               <option value="link">Link</option>
               <option value="text">Text</option>
               <option value="file">File</option>
@@ -345,7 +367,9 @@ function TeacherMaterialsView() {
           </label>
 
           <label className="mb-4 block">
-            <span className="mb-1 block">Content or File Name</span>
+            <span className="mb-1 block">
+              Content or File Name
+            </span>
             <textarea
               className="min-h-24 w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="content"
@@ -356,8 +380,7 @@ function TeacherMaterialsView() {
 
           <button
             className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
-            type="submit"
-          >
+            type="submit">
             Add Material
           </button>
         </form>

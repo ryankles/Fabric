@@ -8,7 +8,7 @@ import itemsRouter from "./routes/items.js";
 
 dotenv.config();
 
-const { MONGO_CONNECTION_STRING, JWT_SECRET } = process.env;
+const { MONGO_CONNECTION_STRING, JWT_SECRET, CLIENT_ORIGIN } = process.env;
 
 if (!JWT_SECRET) {
   console.warn(
@@ -27,7 +27,7 @@ const port = 8000;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: CLIENT_ORIGIN || "http://localhost:5173",
     credentials: true
   })
 );
@@ -41,6 +41,6 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/items", itemsRouter);
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(process.env.PORT || port, () => {
+  console.log(`Server running at http://localhost:${process.env.PORT || port}`);
 });

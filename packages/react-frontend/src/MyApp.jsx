@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate
+} from "react-router-dom";
 
 import Login from "./Login";
 
@@ -21,7 +26,7 @@ function getStoredToken() {
 */
 function Dashboard({ user, logout }) {
   const [activePage, setActivePage] = useState("home");
-  
+
   const view = user.role === "teacher" ? "teacher" : "student";
 
   return (
@@ -31,7 +36,8 @@ function Dashboard({ user, logout }) {
           <div>
             <h1 className="text-primary">Fabric</h1>
             <p className="text-sm text-muted-foreground">
-              {user.name} · {view === "teacher" ? "Teacher" : "Student"}
+              {user.name} ·{" "}
+              {view === "teacher" ? "Teacher" : "Student"}
             </p>
           </div>
 
@@ -43,8 +49,7 @@ function Dashboard({ user, logout }) {
                   : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
               }
               type="button"
-              onClick={() => setActivePage("home")}
-            >
+              onClick={() => setActivePage("home")}>
               Home
             </button>
             <button
@@ -54,8 +59,7 @@ function Dashboard({ user, logout }) {
                   : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
               }
               type="button"
-              onClick={() => setActivePage("announcements")}
-            >
+              onClick={() => setActivePage("announcements")}>
               Announcements
             </button>
             <button
@@ -65,8 +69,7 @@ function Dashboard({ user, logout }) {
                   : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
               }
               type="button"
-              onClick={() => setActivePage("materials")}
-            >
+              onClick={() => setActivePage("materials")}>
               Materials
             </button>
             <button
@@ -76,8 +79,7 @@ function Dashboard({ user, logout }) {
                   : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
               }
               type="button"
-              onClick={() => setActivePage("calendar")}
-            >
+              onClick={() => setActivePage("calendar")}>
               Calendar
             </button>
             <button
@@ -87,8 +89,7 @@ function Dashboard({ user, logout }) {
                   : "rounded-lg px-4 py-2 text-muted-foreground hover:bg-muted hover:text-foreground"
               }
               type="button"
-              onClick={() => setActivePage("grades")}
-            >
+              onClick={() => setActivePage("grades")}>
               Grades
             </button>
             <button onClick={logout}>Log Out</button>
@@ -101,22 +102,23 @@ function Dashboard({ user, logout }) {
         {activePage === "announcements" && (
           <AnnouncementsRemindersPage view={view} />
         )}
-        {activePage === "materials" && <MaterialsListPage view={view} />}
-        {activePage === "calendar" && <CalendarPage view={view} />}
+        {activePage === "materials" && (
+          <MaterialsListPage view={view} />
+        )}
+        {activePage === "calendar" && (
+          <CalendarPage view={view} />
+        )}
         {activePage === "grades" && <GradesPage view={view} />}
       </main>
     </div>
   );
 }
-        
-
 
 function MyApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
   const [items, setItems] = useState([]);
   //const [user, setUser] = useState([]);
-
 
   // On mount, try fetching items to see if we have a valid cookie
   useEffect(() => {
@@ -141,9 +143,11 @@ function MyApp() {
           setIsLoggedIn(true);
         }
       })
-      .catch((error) => console.error("Fetch items error:", error));
+      .catch((error) =>
+        console.error("Fetch items error:", error)
+      );
   }
-/*
+  /*
   function addItem(person) {
     fetch(`${API_BASE_URL}/api/items`, {
       method: "POST",
@@ -158,7 +162,9 @@ function MyApp() {
       .then((json) => {
         if (json) setItems([...items, json]);
       })
-      .catch((error) => console.error("Add item error:", error));
+      .catch((error) =>
+        console.error("Add item error:", error)
+      );
   }
 
   function removeItem(index) {
@@ -172,7 +178,9 @@ function MyApp() {
           setItems(items.filter((_, i) => i !== index));
         }
       })
-      .catch((error) => console.error("Delete item error:", error));
+      .catch((error) =>
+        console.error("Delete item error:", error)
+      );
   }
 */
   // --- Auth actions ---
@@ -189,7 +197,9 @@ function MyApp() {
           setMessage("");
           fetchItems();
         } else {
-          setMessage("Login failed. Check your email and password.");
+          setMessage(
+            "Login failed. Check your email and password."
+          );
         }
       })
       .catch((error) => setMessage(`Login error: ${error}`));
@@ -216,7 +226,6 @@ function MyApp() {
       .catch((error) => setMessage(`Signup error: ${error}`));
   }
 
-	
   function logout() {
     fetch(`${API_BASE_URL}/api/auth/logout`, {
       method: "POST",
@@ -233,7 +242,6 @@ function MyApp() {
   return (
     <BrowserRouter>
       <div className="container">
-
         <Routes>
           <Route
             path="/login"
@@ -273,8 +281,8 @@ function MyApp() {
             path="/"
             element={
               isLoggedIn ? (
-              <Dashboard user={items} logout={logout} />
-               ) : (
+                <Dashboard user={items} logout={logout} />
+              ) : (
                 <Navigate to="/login" />
               )
             }

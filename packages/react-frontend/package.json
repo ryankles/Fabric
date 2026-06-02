@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "npx eslint . && npm run format",
     "preview": "vite preview",
-    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ../../.prettierrc"
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ../../.prettierrc",
+    "test": "echo \"Error: no test specified\""
   },
   "dependencies": {
     "react": "^19.2.4",

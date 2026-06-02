@@ -12,15 +12,30 @@ function GradesPage({ view }) {
       percentage: 88,
       teacher: "Mr. Thompson"
     },
-    { subject: "Physics", grade: "A", percentage: 95, teacher: "Dr. Chen" },
-    { subject: "History", grade: "B", percentage: 85, teacher: "Ms. Davis" },
+    {
+      subject: "Physics",
+      grade: "A",
+      percentage: 95,
+      teacher: "Dr. Chen"
+    },
+    {
+      subject: "History",
+      grade: "B",
+      percentage: 85,
+      teacher: "Ms. Davis"
+    },
     {
       subject: "Spanish",
       grade: "A-",
       percentage: 91,
       teacher: "Señora Garcia"
     },
-    { subject: "Art", grade: "A", percentage: 97, teacher: "Mr. Martinez" }
+    {
+      subject: "Art",
+      grade: "A",
+      percentage: 97,
+      teacher: "Mr. Martinez"
+    }
   ];
 
   const teacherClasses = [
@@ -60,11 +75,12 @@ function GradesPage({ view }) {
           ? studentGrades.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between rounded-lg bg-muted p-4"
-              >
+                className="flex items-center justify-between rounded-lg bg-muted p-4">
                 <div className="flex-1">
                   <p>{item.subject}</p>
-                  <p className="text-muted-foreground">{item.teacher}</p>
+                  <p className="text-muted-foreground">
+                    {item.teacher}
+                  </p>
                 </div>
                 <div className="flex items-center gap-6">
                   <span className="text-muted-foreground">
@@ -79,8 +95,7 @@ function GradesPage({ view }) {
           : teacherClasses.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between rounded-lg bg-muted p-4"
-              >
+                className="flex items-center justify-between rounded-lg bg-muted p-4">
                 <div className="flex-1">
                   <p>{item.class}</p>
                   <p className="text-muted-foreground">

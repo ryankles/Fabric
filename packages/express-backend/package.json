@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npx nodemon backend.js",
     "start": "node backend.js",
+    "lint": "eslint .",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ../../.prettierrc",
     "sign-test-jwt": "node scripts/sign-test-jwt.js"
   },

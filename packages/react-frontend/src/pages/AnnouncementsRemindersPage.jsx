@@ -76,8 +76,10 @@ function getCourseTitle(courseId) {
 function filterItems(items, selectedCourse, selectedType) {
   return items.filter((item) => {
     const matchesCourse =
-      selectedCourse === "all" || item.courseId === selectedCourse;
-    const matchesType = selectedType === "all" || item.type === selectedType;
+      selectedCourse === "all" ||
+      item.courseId === selectedCourse;
+    const matchesType =
+      selectedType === "all" || item.type === selectedType;
 
     return matchesCourse && matchesType;
   });
@@ -98,7 +100,9 @@ function typeBadgeClass(type) {
 function StudentAnnouncementsView() {
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
-  const [completedIds, setCompletedIds] = useState(["update-2"]);
+  const [completedIds, setCompletedIds] = useState([
+    "update-2"
+  ]);
   const visibleUpdates = filterItems(
     studentUpdates,
     selectedCourse,
@@ -107,7 +111,9 @@ function StudentAnnouncementsView() {
 
   function toggleComplete(id) {
     if (completedIds.includes(id)) {
-      setCompletedIds(completedIds.filter((itemId) => itemId !== id));
+      setCompletedIds(
+        completedIds.filter((itemId) => itemId !== id)
+      );
     } else {
       setCompletedIds([...completedIds, id]);
     }
@@ -120,11 +126,12 @@ function StudentAnnouncementsView() {
         <div className="flex flex-wrap gap-2">
           {courses.map((course) => (
             <button
-              className={filterButtonClass(selectedCourse === course.id)}
+              className={filterButtonClass(
+                selectedCourse === course.id
+              )}
               key={course.id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}
-            >
+              onClick={() => setSelectedCourse(course.id)}>
               {course.title}
             </button>
           ))}
@@ -137,8 +144,9 @@ function StudentAnnouncementsView() {
           <select
             className="rounded-lg border border-border bg-input-background px-3 py-2 text-foreground"
             value={selectedType}
-            onChange={(event) => setSelectedType(event.target.value)}
-          >
+            onChange={(event) =>
+              setSelectedType(event.target.value)
+            }>
             <option value="all">All types</option>
             <option value="reminder">Reminders</option>
             <option value="announcement">Announcements</option>
@@ -156,8 +164,7 @@ function StudentAnnouncementsView() {
                     ? "flex items-start gap-3 rounded-lg bg-muted/50 p-4"
                     : "flex items-start gap-3 rounded-lg bg-muted p-4"
                 }
-                key={update.id}
-              >
+                key={update.id}>
                 {update.type === "reminder" ? (
                   <input
                     className="mt-1 h-5 w-5 shrink-0 accent-primary"
@@ -172,7 +179,8 @@ function StudentAnnouncementsView() {
 
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex flex-wrap items-center gap-2">
-                    <span className={typeBadgeClass(update.type)}>
+                    <span
+                      className={typeBadgeClass(update.type)}>
                       {update.type}
                     </span>
                     <span className="text-sm text-muted-foreground">
@@ -184,8 +192,7 @@ function StudentAnnouncementsView() {
                       isComplete
                         ? "line-through text-muted-foreground"
                         : "text-foreground"
-                    }
-                  >
+                    }>
                     {update.title}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
@@ -205,7 +212,9 @@ function StudentAnnouncementsView() {
 }
 
 function TeacherAnnouncementsView() {
-  const [updates, setUpdates] = useState(teacherStartingUpdates);
+  const [updates, setUpdates] = useState(
+    teacherStartingUpdates
+  );
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [form, setForm] = useState({
     courseId: "algebra",
@@ -214,7 +223,11 @@ function TeacherAnnouncementsView() {
     type: "announcement",
     publishAt: "2026-05-22"
   });
-  const visibleUpdates = filterItems(updates, selectedCourse, "all");
+  const visibleUpdates = filterItems(
+    updates,
+    selectedCourse,
+    "all"
+  );
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -259,11 +272,12 @@ function TeacherAnnouncementsView() {
         <div className="flex flex-wrap gap-2">
           {courses.map((course) => (
             <button
-              className={filterButtonClass(selectedCourse === course.id)}
+              className={filterButtonClass(
+                selectedCourse === course.id
+              )}
               key={course.id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}
-            >
+              onClick={() => setSelectedCourse(course.id)}>
               {course.title}
             </button>
           ))}
@@ -275,7 +289,9 @@ function TeacherAnnouncementsView() {
           <h2 className="mb-6">Posted Updates</h2>
           <div className="space-y-3">
             {visibleUpdates.map((update) => (
-              <article className="rounded-lg bg-muted p-4" key={update.id}>
+              <article
+                className="rounded-lg bg-muted p-4"
+                key={update.id}>
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className={typeBadgeClass(update.type)}>
                     {update.type}
@@ -285,14 +301,15 @@ function TeacherAnnouncementsView() {
                   </span>
                 </div>
                 <h3>{update.title}</h3>
-                <p className="mt-1 text-muted-foreground">{update.body}</p>
+                <p className="mt-1 text-muted-foreground">
+                  {update.body}
+                </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
                   <span>Publish: {update.publishAt}</span>
                   <button
                     className="text-destructive hover:underline"
                     type="button"
-                    onClick={() => deleteUpdate(update.id)}
-                  >
+                    onClick={() => deleteUpdate(update.id)}>
                     Delete
                   </button>
                 </div>
@@ -303,8 +320,7 @@ function TeacherAnnouncementsView() {
 
         <form
           className="rounded-lg border border-border bg-card p-6"
-          onSubmit={submitUpdate}
-        >
+          onSubmit={submitUpdate}>
           <h2 className="mb-4">Create Update</h2>
 
           <label className="mb-3 block">
@@ -313,8 +329,7 @@ function TeacherAnnouncementsView() {
               className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="courseId"
               value={form.courseId}
-              onChange={handleChange}
-            >
+              onChange={handleChange}>
               {courses
                 .filter((course) => course.id !== "all")
                 .map((course) => (
@@ -331,8 +346,7 @@ function TeacherAnnouncementsView() {
               className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="type"
               value={form.type}
-              onChange={handleChange}
-            >
+              onChange={handleChange}>
               <option value="announcement">Announcement</option>
               <option value="reminder">Reminder</option>
             </select>
@@ -372,8 +386,7 @@ function TeacherAnnouncementsView() {
 
           <button
             className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
-            type="submit"
-          >
+            type="submit">
             Post Update
           </button>
         </form>

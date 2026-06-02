@@ -1,4 +1,12 @@
 {
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "lint": "npm run --workspaces --if-present lint",
+    "build": "npm run -w react-frontend build"
+  },
   "devDependencies": {
     "prettier": "^3.8.3"
   }

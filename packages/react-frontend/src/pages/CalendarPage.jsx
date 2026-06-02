@@ -2,7 +2,15 @@ import { useState } from "react";
 
 function CalendarPage({ view }) {
   const currentMonth = "May 2026";
-  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daysOfWeek = [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat"
+  ];
 
   const classes =
     view === "student"
@@ -16,7 +24,8 @@ function CalendarPage({ view }) {
         ]
       : ["Algebra II", "Geometry", "Calculus", "Pre-Algebra"];
 
-  const [selectedClasses, setSelectedClasses] = useState(classes);
+  const [selectedClasses, setSelectedClasses] =
+    useState(classes);
 
   const toggleClass = (className) => {
     setSelectedClasses((prev) =>
@@ -67,8 +76,16 @@ function CalendarPage({ view }) {
   const allEvents =
     view === "student"
       ? [
-          { date: "May 6", title: "Today - Regular Classes", class: null },
-          { date: "May 8", title: "Math Quiz", class: "Mathematics" },
+          {
+            date: "May 6",
+            title: "Today - Regular Classes",
+            class: null
+          },
+          {
+            date: "May 8",
+            title: "Math Quiz",
+            class: "Mathematics"
+          },
           {
             date: "May 10",
             title: "English Essay Due",
@@ -79,13 +96,21 @@ function CalendarPage({ view }) {
             title: "Math Quiz - Functions",
             class: "Mathematics"
           },
-          { date: "May 12", title: "Science Fair", class: "Physics" },
+          {
+            date: "May 12",
+            title: "Science Fair",
+            class: "Physics"
+          },
           {
             date: "May 13",
             title: "Physics Lab Report Due",
             class: "Physics"
           },
-          { date: "May 14", title: "Art Project Due", class: "Art" },
+          {
+            date: "May 14",
+            title: "Art Project Due",
+            class: "Art"
+          },
           {
             date: "May 15",
             title: "Parent-Teacher Conference",
@@ -93,9 +118,21 @@ function CalendarPage({ view }) {
           }
         ]
       : [
-          { date: "May 6", title: "Today - Regular Schedule", class: null },
-          { date: "May 8", title: "Quiz Day - All Periods", class: null },
-          { date: "May 12", title: "Science Fair - Afternoon", class: null },
+          {
+            date: "May 6",
+            title: "Today - Regular Schedule",
+            class: null
+          },
+          {
+            date: "May 8",
+            title: "Quiz Day - All Periods",
+            class: null
+          },
+          {
+            date: "May 12",
+            title: "Science Fair - Afternoon",
+            class: null
+          },
           {
             date: "May 15",
             title: "Parent Conferences 2-6 PM",
@@ -104,7 +141,9 @@ function CalendarPage({ view }) {
         ];
 
   const events = allEvents.filter(
-    (event) => event.class === null || selectedClasses.includes(event.class)
+    (event) =>
+      event.class === null ||
+      selectedClasses.includes(event.class)
   );
 
   return (
@@ -122,8 +161,7 @@ function CalendarPage({ view }) {
                   selectedClasses.includes(className)
                     ? "rounded-lg bg-primary px-3 py-1 text-primary-foreground transition-colors"
                     : "rounded-lg bg-muted px-3 py-1 text-muted-foreground transition-colors hover:bg-accent"
-                }
-              >
+                }>
                 {className}
               </button>
             ))}
@@ -138,8 +176,7 @@ function CalendarPage({ view }) {
             {daysOfWeek.map((day) => (
               <div
                 key={day}
-                className="p-2 text-center text-muted-foreground"
-              >
+                className="p-2 text-center text-muted-foreground">
                 {day}
               </div>
             ))}
@@ -154,8 +191,7 @@ function CalendarPage({ view }) {
                       : item.event
                         ? "relative flex aspect-square items-center justify-center rounded-lg bg-accent"
                         : "relative flex aspect-square cursor-pointer items-center justify-center rounded-lg bg-muted transition-colors hover:bg-accent"
-                }
-              >
+                }>
                 {item.day && (
                   <>
                     <span>{item.day}</span>
@@ -173,11 +209,17 @@ function CalendarPage({ view }) {
           <h3 className="mb-4">Upcoming</h3>
           <div className="space-y-3">
             {events.map((event, index) => (
-              <div key={index} className="rounded-lg bg-muted p-3">
-                <p className="text-muted-foreground">{event.date}</p>
+              <div
+                key={index}
+                className="rounded-lg bg-muted p-3">
+                <p className="text-muted-foreground">
+                  {event.date}
+                </p>
                 <p>{event.title}</p>
                 {event.class && (
-                  <p className="mt-1 text-muted-foreground">{event.class}</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {event.class}
+                  </p>
                 )}
               </div>
             ))}
