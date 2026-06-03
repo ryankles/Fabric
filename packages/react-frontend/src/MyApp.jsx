@@ -99,7 +99,7 @@ function Dashboard({ user, logout }) {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        {activePage === "home" && <HomePage view={view} />}
+        {activePage === "home" && <HomePage view={view} user={user} />}
         {activePage === "announcements" && (
           <AnnouncementsRemindersPage view={view} />
         )}
@@ -274,6 +274,7 @@ function MyApp() {
                   toggleText="Already have an account?"
                   toggleLink="/login"
                   toggleLabel="Log In"
+                  isSignup={true}
                 />
               )
             }
