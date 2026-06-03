@@ -19,11 +19,11 @@ jobs:
           node-version: 20
 
       - name: Install backend dependencies
-        run: npm ci --workspaces=false
+        run: npm ci --omit=dev --workspaces=false
         working-directory: packages/express-backend
 
       - name: Zip artifact for deployment
-        run: zip -r ../../release.zip . -x "node_modules/*"
+        run: zip -r ../../release.zip .
         working-directory: packages/express-backend
 
       - name: Deploy to Azure Web App

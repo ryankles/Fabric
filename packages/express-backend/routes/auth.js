@@ -25,8 +25,8 @@ router.get("/me", requireAuth, async (req, res) => {
 // Cookie options — httpOnly means JS can't read it (more secure)
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: "lax",
-  secure: false, // set to true when deployed with HTTPS
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  secure: process.env.NODE_ENV === "production",
   maxAge: 24 * 60 * 60 * 1000 // 1 day, matches token expiry
 };
 
