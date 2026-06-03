@@ -14,7 +14,8 @@ import CalendarPage from "./pages/CalendarPage";
 import GradesPage from "./pages/GradesPage";
 import HomePage from "./pages/HomePage";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_PREFIX || "http://localhost:8000";
 /*
 function getStoredToken() {
   return (
