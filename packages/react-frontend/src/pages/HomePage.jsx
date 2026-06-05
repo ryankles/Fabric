@@ -217,7 +217,8 @@ export function HomePage({ view, user: currentUser }) {
                   </div>
 
                   <p className="text-sm text-muted-foreground">
-                    {announcement.courseId?.code}
+                    {announcement.courseTitle ||
+                      announcement.courseId?.code}
                   </p>
 
                   <p className="text-sm mt-2">

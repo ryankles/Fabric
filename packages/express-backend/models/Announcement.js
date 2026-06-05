@@ -2,36 +2,45 @@ import mongoose from "mongoose";
 
 const announcementSchema = new mongoose.Schema(
   {
+    ownerUserId: {
+      type: String,
+      required: true,
+      index: true
+    },
     courseId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Course",
-      required: true
+      type: String,
+      required: true,
+      index: true
+    },
+    courseTitle: {
+      type: String,
+      required: true,
+      trim: true
     },
     title: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     body: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     type: {
       type: String,
       enum: [
+        "announcement",
+        "reminder",
         "general",
         "assignment",
         "exam",
         "urgent"
       ],
-      default: "general"
+      default: "announcement"
     },
     publishAt: {
       type: Date,
-      default: Date.now
-    },
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
       required: true
     }
   },
