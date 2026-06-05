@@ -101,10 +101,10 @@ function Dashboard({ user, logout }) {
       <main className="mx-auto max-w-7xl px-6 py-8">
         {activePage === "home" && <HomePage view={view} user={user} />}
         {activePage === "announcements" && (
-          <AnnouncementsRemindersPage view={view} />
+          <AnnouncementsRemindersPage view={view} user={user} />
         )}
         {activePage === "materials" && (
-          <MaterialsListPage view={view} />
+          <MaterialsListPage view={view} user={user} />
         )}
         {activePage === "calendar" && (
           <CalendarPage view={view} />
@@ -118,16 +118,14 @@ function Dashboard({ user, logout }) {
 function MyApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
-  const [items, setItems] = useState([]);
-  //const [user, setUser] = useState([]);
+  const [user, setUser] = useState(null);
 
-  // On mount, try fetching items to see if we have a valid cookie
+  // On mount, try fetching the current user to see if we have a valid cookie
   useEffect(() => {
-    fetchItems();
+    fetchUser();
   }, []);
 
-  // --- API calls (credentials: "include" sends the cookie automatically) ---
-  function fetchItems() {
+  function fetchUser() {
     fetch(`${API_BASE_URL}/api/auth/me`, {
       credentials: "include"
     })
@@ -140,12 +138,12 @@ function MyApp() {
       })
       .then((json) => {
         if (json) {
-          setItems(json);
+          setUser(json);
           setIsLoggedIn(true);
         }
       })
       .catch((error) =>
-        console.error("Fetch items error:", error)
+        console.error("Fetch user error:", error)
       );
   }
   /*
@@ -196,7 +194,7 @@ function MyApp() {
         if (res.status === 200) {
           setIsLoggedIn(true);
           setMessage("");
-          fetchItems();
+          fetchUser();
         } else {
           setMessage(
             "Login failed. Check your email and password."
@@ -217,7 +215,7 @@ function MyApp() {
         if (res.status === 201) {
           setIsLoggedIn(true);
           setMessage("");
-          fetchItems();
+          fetchUser();
         } else if (res.status === 409) {
           setMessage("That email is already in use.");
         } else {
@@ -234,7 +232,7 @@ function MyApp() {
     })
       .then(() => {
         setIsLoggedIn(false);
-        setItems([]);
+        setUser(null);
         setMessage("");
       })
       .catch((error) => console.error("Logout error:", error));
@@ -282,8 +280,8 @@ function MyApp() {
           <Route
             path="/"
             element={
-              isLoggedIn ? (
-                <Dashboard user={items} logout={logout} />
+              isLoggedIn && user ? (
+                <Dashboard user={user} logout={logout} />
               ) : (
                 <Navigate to="/login" />
               )

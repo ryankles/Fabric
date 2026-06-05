@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import authRouter from "./routes/auth.js";
 import itemsRouter from "./routes/items.js";
+import announcementsRouter from "./routes/announcements.js";
+import materialsRouter from "./routes/materials.js";
 
 dotenv.config();
 
@@ -40,6 +42,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/items", itemsRouter);
+app.use("/api/announcements", announcementsRouter);
+app.use("/api/materials", materialsRouter);
 
 app.listen(process.env.PORT || port, () => {
   console.log(`Server running at http://localhost:${process.env.PORT || port}`);

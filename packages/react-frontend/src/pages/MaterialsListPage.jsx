@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// to be replaced with data from the backend
+const API_BASE_URL =
+  import.meta.env.VITE_API_PREFIX || "http://localhost:8000";
+
 const courses = [
   { id: "all", title: "All Classes" },
   { id: "algebra", title: "Algebra II" },
@@ -9,77 +11,17 @@ const courses = [
   { id: "history", title: "History" }
 ];
 
-// to be replaced with data from the backend
-const startingMaterials = [
-  {
-    id: "material-1",
-    courseId: "algebra",
-    courseTitle: "Algebra II",
-    title: "Chapter 5 Notes",
-    description: "Quadratic equations and graphing notes.",
-    type: "file",
-    url: "",
-    content: "chapter-5-notes.pdf",
-    createdBy: "Ms. Williams",
-    createdAt: "2026-05-15"
-  },
-  {
-    id: "material-2",
-    courseId: "physics",
-    courseTitle: "Physics",
-    title: "Motion Simulation",
-    description:
-      "Practice interpreting velocity and acceleration graphs.",
-    type: "link",
-    url: "https://example.com/motion-simulation",
-    content: "",
-    createdBy: "Dr. Chen",
-    createdAt: "2026-05-18"
-  },
-  {
-    id: "material-3",
-    courseId: "history",
-    courseTitle: "History",
-    title: "Industrial Revolution Reading",
-    description: "Primary source reading packet.",
-    type: "text",
-    url: "",
-    content:
-      "Read pages 4-12 and answer the two discussion questions.",
-    createdBy: "Ms. Davis",
-    createdAt: "2026-05-20"
-  },
-  {
-    id: "material-4",
-    courseId: "geometry",
-    courseTitle: "Geometry",
-    title: "Proof Practice",
-    description: "Extra practice for two-column proofs.",
-    type: "file",
-    url: "",
-    content: "proof-practice.docx",
-    createdBy: "Ms. Williams",
-    createdAt: "2026-05-21"
-  }
-];
-
 function getCourseTitle(courseId) {
   const course = courses.find((item) => item.id === courseId);
   return course ? course.title : "Class";
 }
 
-function filterMaterials(
-  materials,
-  selectedCourse,
-  selectedType
-) {
+function filterMaterials(materials, selectedCourse, selectedType) {
   return materials.filter((material) => {
     const matchesCourse =
-      selectedCourse === "all" ||
-      material.courseId === selectedCourse;
+      selectedCourse === "all" || material.courseId === selectedCourse;
     const matchesType =
       selectedType === "all" || material.type === selectedType;
-
     return matchesCourse && matchesType;
   });
 }
@@ -94,11 +36,9 @@ function typeBadgeClass(type) {
   if (type === "link") {
     return "rounded-full bg-[#dfe8f0] px-2 py-1 text-xs font-medium capitalize text-[#526e8e]";
   }
-
   if (type === "text") {
     return "rounded-full bg-[#e4eadb] px-2 py-1 text-xs font-medium capitalize text-[#617344]";
   }
-
   return "rounded-full bg-[#f5dfdf] px-2 py-1 text-xs font-medium capitalize text-[#9a5358]";
 }
 
@@ -106,23 +46,15 @@ function MaterialCard({ material, onDelete }) {
   return (
     <article className="rounded-lg bg-muted p-4">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className={typeBadgeClass(material.type)}>
-          {material.type}
-        </span>
-        <span className="text-sm text-muted-foreground">
-          {material.courseTitle}
-        </span>
+        <span className={typeBadgeClass(material.type)}>{material.type}</span>
+        <span className="text-sm text-muted-foreground">{material.courseTitle}</span>
       </div>
 
       <h3>{material.title}</h3>
-      <p className="mt-1 text-muted-foreground">
-        {material.description}
-      </p>
+      <p className="mt-1 text-muted-foreground">{material.description}</p>
 
       {material.type === "link" && material.url ? (
-        <a
-          className="mt-3 block break-words text-primary"
-          href={material.url}>
+        <a className="mt-3 block break-words text-primary" href={material.url}>
           {material.url}
         </a>
       ) : null}
@@ -135,13 +67,13 @@ function MaterialCard({ material, onDelete }) {
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
         <span>
-          Added {material.createdAt} by {material.createdBy}
+          Added {material.createdAt?.slice(0, 10)} by {material.createdBy}
         </span>
         {onDelete ? (
           <button
             className="text-destructive hover:underline"
             type="button"
-            onClick={() => onDelete(material.id)}>
+            onClick={() => onDelete(material._id)}>
             Delete
           </button>
         ) : null}
@@ -151,13 +83,18 @@ function MaterialCard({ material, onDelete }) {
 }
 
 function StudentMaterialsView() {
+  const [materials, setMaterials] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
-  const visibleMaterials = filterMaterials(
-    startingMaterials,
-    selectedCourse,
-    selectedType
-  );
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/materials`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setMaterials)
+      .catch(() => {});
+  }, []);
+
+  const visibleMaterials = filterMaterials(materials, selectedCourse, selectedType);
 
   return (
     <div className="space-y-6">
@@ -166,9 +103,7 @@ function StudentMaterialsView() {
         <div className="flex flex-wrap gap-2">
           {courses.map((course) => (
             <button
-              className={filterButtonClass(
-                selectedCourse === course.id
-              )}
+              className={filterButtonClass(selectedCourse === course.id)}
               key={course.id}
               type="button"
               onClick={() => setSelectedCourse(course.id)}>
@@ -184,9 +119,7 @@ function StudentMaterialsView() {
           <select
             className="rounded-lg border border-border bg-input-background px-3 py-2 text-foreground"
             value={selectedType}
-            onChange={(event) =>
-              setSelectedType(event.target.value)
-            }>
+            onChange={(event) => setSelectedType(event.target.value)}>
             <option value="all">All types</option>
             <option value="link">Links</option>
             <option value="text">Text</option>
@@ -196,10 +129,7 @@ function StudentMaterialsView() {
 
         <div className="grid gap-3 md:grid-cols-2">
           {visibleMaterials.map((material) => (
-            <MaterialCard
-              key={material.id}
-              material={material}
-            />
+            <MaterialCard key={material._id} material={material} />
           ))}
         </div>
       </section>
@@ -207,8 +137,8 @@ function StudentMaterialsView() {
   );
 }
 
-function TeacherMaterialsView() {
-  const [materials, setMaterials] = useState(startingMaterials);
+function TeacherMaterialsView({ user }) {
+  const [materials, setMaterials] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [form, setForm] = useState({
     courseId: "algebra",
@@ -218,11 +148,15 @@ function TeacherMaterialsView() {
     url: "",
     content: ""
   });
-  const visibleMaterials = filterMaterials(
-    materials,
-    selectedCourse,
-    "all"
-  );
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/materials`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setMaterials)
+      .catch(() => {});
+  }, []);
+
+  const visibleMaterials = filterMaterials(materials, selectedCourse, "all");
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -231,13 +165,9 @@ function TeacherMaterialsView() {
 
   function addMaterial(event) {
     event.preventDefault();
+    if (!form.title.trim()) return;
 
-    if (!form.title.trim()) {
-      return;
-    }
-
-    const material = {
-      id: "material-" + Date.now(),
+    const payload = {
       courseId: form.courseId,
       courseTitle: getCourseTitle(form.courseId),
       title: form.title.trim(),
@@ -245,25 +175,36 @@ function TeacherMaterialsView() {
       type: form.type,
       url: form.url.trim(),
       content: form.content.trim(),
-      createdBy: "You",
-      createdAt: new Date().toISOString().slice(0, 10)
+      createdBy: user?.name || "Teacher"
     };
 
-    setMaterials([material, ...materials]);
-    setForm({
-      courseId: form.courseId,
-      title: "",
-      description: "",
-      type: "link",
-      url: "",
-      content: ""
-    });
+    fetch(`${API_BASE_URL}/api/materials`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created) {
+          setMaterials((prev) => [created, ...prev]);
+          setForm({ ...form, title: "", description: "", url: "", content: "" });
+        }
+      })
+      .catch(() => {});
   }
 
   function deleteMaterial(id) {
-    setMaterials(
-      materials.filter((material) => material.id !== id)
-    );
+    fetch(`${API_BASE_URL}/api/materials/${id}`, {
+      method: "DELETE",
+      credentials: "include"
+    })
+      .then((res) => {
+        if (res.status === 204) {
+          setMaterials((prev) => prev.filter((m) => m._id !== id));
+        }
+      })
+      .catch(() => {});
   }
 
   return (
@@ -273,9 +214,7 @@ function TeacherMaterialsView() {
         <div className="flex flex-wrap gap-2">
           {courses.map((course) => (
             <button
-              className={filterButtonClass(
-                selectedCourse === course.id
-              )}
+              className={filterButtonClass(selectedCourse === course.id)}
               key={course.id}
               type="button"
               onClick={() => setSelectedCourse(course.id)}>
@@ -291,7 +230,7 @@ function TeacherMaterialsView() {
           <div className="grid gap-3 md:grid-cols-2">
             {visibleMaterials.map((material) => (
               <MaterialCard
-                key={material.id}
+                key={material._id}
                 material={material}
                 onDelete={deleteMaterial}
               />
@@ -367,9 +306,7 @@ function TeacherMaterialsView() {
           </label>
 
           <label className="mb-4 block">
-            <span className="mb-1 block">
-              Content or File Name
-            </span>
+            <span className="mb-1 block">Content or File Name</span>
             <textarea
               className="min-h-24 w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="content"
@@ -389,11 +326,10 @@ function TeacherMaterialsView() {
   );
 }
 
-function MaterialsListPage({ view }) {
+function MaterialsListPage({ view, user }) {
   if (view === "teacher") {
-    return <TeacherMaterialsView />;
+    return <TeacherMaterialsView user={user} />;
   }
-
   return <StudentMaterialsView />;
 }
 
