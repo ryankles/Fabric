@@ -5,10 +5,19 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import authRouter from "./routes/auth.js";
 import itemsRouter from "./routes/items.js";
+import coursesRouter from "./routes/courses.js";
+import enrollmentsRouter from "./routes/enrollments.js";
+import assignmentsRouter from "./routes/assignments.js";
+import submissionsRouter from "./routes/submissions.js";
+import gradesRouter from "./routes/grades.js";
+import announcementsRouter from "./routes/announcements.js";
+import materialsRouter from "./routes/materials.js";
+import dashboardRouter from "./routes/dashboard.js";
 
 dotenv.config();
 
-const { MONGO_CONNECTION_STRING, JWT_SECRET, CLIENT_ORIGIN } = process.env;
+const { MONGO_CONNECTION_STRING, JWT_SECRET, CLIENT_ORIGIN } =
+  process.env;
 
 if (!JWT_SECRET) {
   console.warn(
@@ -40,7 +49,17 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRouter);
 app.use("/api/items", itemsRouter);
+app.use("/api/courses", coursesRouter);
+app.use("/api/enrollments", enrollmentsRouter);
+app.use("/api/assignments", assignmentsRouter);
+app.use("/api/submissions", submissionsRouter);
+app.use("/api/grades", gradesRouter);
+app.use("/api/announcements", announcementsRouter);
+app.use("/api/materials", materialsRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 app.listen(process.env.PORT || port, () => {
-  console.log(`Server running at http://localhost:${process.env.PORT || port}`);
+  console.log(
+    `Server running at http://localhost:${process.env.PORT || port}`
+  );
 });
