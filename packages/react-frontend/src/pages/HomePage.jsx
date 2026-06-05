@@ -1,33 +1,74 @@
-export function HomePage({ view, user }) {
-  const studentData = {
-    name: "Alex Johnson",
-    grade: "10th Grade",
-    gpa: "3.8",
-    attendance: "96%"
-  };
+import { useEffect, useState } from "react";
 
-  const teacherData = {
-    name: "Ms. Sarah Williams",
-    department: "Mathematics",
-    classes: 4,
-    students: 87
-  };
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_PREFIX ||
+  "http://localhost:8000";
 
-  const upcomingEvents = [
-    { title: "Math Quiz", date: "May 8", time: "10:00 AM" },
-    { title: "Science Fair", date: "May 12", time: "2:00 PM" },
-    {
-      title: "Parent-Teacher Conference",
-      date: "May 15",
-      time: "4:00 PM"
-    }
-  ];
+export function HomePage({ view, user: currentUser }) {
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/dashboard`, {
+      credentials: "include"
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load dashboard");
+        }
+
+        return res.json();
+      })
+      .then((data) => {
+        setDashboard(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <p>Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
+  const user = dashboard?.user || currentUser || {};
+  const displayName = user.name || "User";
+  const role = user.role || view;
+  const assignmentCount =
+    dashboard?.upcomingAssignmentCount ??
+    dashboard?.assignments?.length ??
+    0;
+  const announcementCount =
+    dashboard?.recentAnnouncementCount ??
+    dashboard?.announcements?.length ??
+    0;
+  const gpa =
+    typeof dashboard?.gpa === "number"
+      ? dashboard.gpa.toFixed(2)
+      : "0.00";
 
   return (
     <div className="space-y-6">
       <div className="bg-card rounded-lg p-6 border border-border">
-        <h2 className="mb-4">
-          Welcome back, {user?.name || "User"}
+        <h2 className="text-2xl font-semibold mb-4">
+          Welcome back, {displayName}
         </h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -35,89 +76,165 @@ export function HomePage({ view, user }) {
             <>
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
-                  Grade Level
+                  Courses
                 </p>
-                <p>{studentData.grade}</p>
+                <p className="text-xl font-semibold">
+                  {dashboard?.classCount ?? 0}
+                </p>
               </div>
 
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
                   GPA
                 </p>
-                <p>{studentData.gpa}</p>
+                <p className="text-xl font-semibold">{gpa}</p>
               </div>
 
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
-                  Attendance
+                  Upcoming Assignments
                 </p>
-                <p>{studentData.attendance}</p>
+                <p className="text-xl font-semibold">
+                  {assignmentCount}
+                </p>
               </div>
 
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
-                  Classes
+                  Role
                 </p>
-                <p>6 Active</p>
+                <p className="text-xl font-semibold capitalize">
+                  {role}
+                </p>
               </div>
             </>
           ) : (
             <>
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
-                  Department
+                  Courses
                 </p>
-                <p>{teacherData.department}</p>
-              </div>
-
-              <div className="bg-muted rounded-lg p-4">
-                <p className="text-muted-foreground mb-1">
-                  Classes
+                <p className="text-xl font-semibold">
+                  {dashboard?.classCount ?? 0}
                 </p>
-                <p>{teacherData.classes}</p>
               </div>
 
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
                   Students
                 </p>
-                <p>{teacherData.students}</p>
+                <p className="text-xl font-semibold">
+                  {dashboard?.studentCount ?? 0}
+                </p>
               </div>
 
               <div className="bg-muted rounded-lg p-4">
                 <p className="text-muted-foreground mb-1">
-                  This Week
+                  Announcements
                 </p>
-                <p>12 Assignments</p>
+                <p className="text-xl font-semibold">
+                  {announcementCount}
+                </p>
+              </div>
+
+              <div className="bg-muted rounded-lg p-4">
+                <p className="text-muted-foreground mb-1">
+                  Role
+                </p>
+                <p className="text-xl font-semibold capitalize">
+                  {role}
+                </p>
               </div>
             </>
           )}
         </div>
       </div>
 
-      <div className="bg-card rounded-lg p-6 border border-border">
-        <h3 className="mb-4">Upcoming Events</h3>
+      {view === "student" && (
+        <div className="bg-card rounded-lg p-6 border border-border">
+          <h3 className="text-xl font-semibold mb-4">
+            Upcoming Assignments
+          </h3>
 
-        <div className="space-y-3">
-          {upcomingEvents.map((event, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 bg-muted rounded-lg">
-              <div>
-                <p>{event.title}</p>
-                <p className="text-muted-foreground">
-                  {event.time}
-                </p>
-              </div>
+          {dashboard?.assignments?.length ? (
+            <div className="space-y-3">
+              {dashboard.assignments.map((assignment) => (
+                <div
+                  key={assignment._id}
+                  className="border-b border-border pb-3">
+                  <div className="flex justify-between items-center">
+                    <p className="font-medium">
+                      {assignment.title}
+                    </p>
 
-              <span className="text-muted-foreground">
-                {event.date}
-              </span>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(
+                        assignment.dueDate
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    {assignment.courseId?.code}
+                  </p>
+
+                  <p className="text-sm text-muted-foreground">
+                    {assignment.pointsPossible} points
+                  </p>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <p className="text-muted-foreground">
+              No upcoming assignments.
+            </p>
+          )}
         </div>
-      </div>
+      )}
+
+      {view === "teacher" && (
+        <div className="bg-card rounded-lg p-6 border border-border">
+          <h3 className="text-xl font-semibold mb-4">
+            Recent Announcements
+          </h3>
+
+          {dashboard?.announcements?.length ? (
+            <div className="space-y-3">
+              {dashboard.announcements.map((announcement) => (
+                <div
+                  key={announcement._id}
+                  className="border-b border-border pb-3">
+                  <div className="flex justify-between items-center">
+                    <p className="font-medium">
+                      {announcement.title}
+                    </p>
+
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(
+                        announcement.publishAt
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground">
+                    {announcement.courseId?.code}
+                  </p>
+
+                  <p className="text-sm mt-2">
+                    {announcement.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground">
+              No announcements.
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
 export default HomePage;
