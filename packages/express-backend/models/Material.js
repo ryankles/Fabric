@@ -2,20 +2,11 @@ import mongoose from "mongoose";
 
 const materialSchema = new mongoose.Schema(
   {
-    ownerUserId: {
-      type: String,
-      required: true,
-      index: true
-    },
     courseId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
       required: true,
       index: true
-    },
-    courseTitle: {
-      type: String,
-      required: true,
-      trim: true
     },
     title: {
       type: String,
@@ -49,8 +40,10 @@ const materialSchema = new mongoose.Schema(
       default: ""
     },
     createdBy: {
-      type: String,
-      required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true
     }
   },
   {

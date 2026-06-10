@@ -1,22 +1,13 @@
 import { useState, useEffect } from "react";
+import {
+  getItemCourseTitle,
+  useCourses
+} from "../hooks/useCourses";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_PREFIX ||
   "http://localhost:8000";
-
-const courses = [
-  { id: "all", title: "All Classes" },
-  { id: "algebra", title: "Algebra II" },
-  { id: "geometry", title: "Geometry" },
-  { id: "physics", title: "Physics" },
-  { id: "history", title: "History" }
-];
-
-function getCourseTitle(courseId) {
-  const course = courses.find((item) => item.id === courseId);
-  return course ? course.title : "Class";
-}
 
 function filterMaterials(
   materials,
@@ -26,7 +17,7 @@ function filterMaterials(
   return materials.filter((material) => {
     const matchesCourse =
       selectedCourse === "all" ||
-      material.courseId === selectedCourse;
+      String(material.courseId) === selectedCourse;
     const matchesType =
       selectedType === "all" || material.type === selectedType;
     return matchesCourse && matchesType;
@@ -57,7 +48,7 @@ function MaterialCard({ material, onDelete }) {
           {material.type}
         </span>
         <span className="text-sm text-muted-foreground">
-          {material.courseTitle}
+          {getItemCourseTitle(material)}
         </span>
       </div>
 
@@ -83,7 +74,7 @@ function MaterialCard({ material, onDelete }) {
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
         <span>
           Added {material.createdAt?.slice(0, 10)} by{" "}
-          {material.createdBy}
+          {material.createdByName || "Teacher"}
         </span>
         {onDelete ? (
           <button
@@ -99,6 +90,7 @@ function MaterialCard({ material, onDelete }) {
 }
 
 function StudentMaterialsView() {
+  const { courses, courseOptions } = useCourses(API_BASE_URL);
   const [materials, setMaterials] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
@@ -123,14 +115,14 @@ function StudentMaterialsView() {
       <section className="rounded-lg border border-border bg-card p-4">
         <h4 className="mb-3">Filter by Class</h4>
         <div className="flex flex-wrap gap-2">
-          {courses.map((course) => (
+          {courseOptions.map((course) => (
             <button
               className={filterButtonClass(
-                selectedCourse === course.id
+                selectedCourse === course._id
               )}
-              key={course.id}
+              key={course._id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}>
+              onClick={() => setSelectedCourse(course._id)}>
               {course.title}
             </button>
           ))}
@@ -153,6 +145,12 @@ function StudentMaterialsView() {
           </select>
         </div>
 
+        {courses.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No enrolled courses yet.
+          </p>
+        ) : null}
+
         <div className="grid gap-3 md:grid-cols-2">
           {visibleMaterials.map((material) => (
             <MaterialCard
@@ -166,11 +164,12 @@ function StudentMaterialsView() {
   );
 }
 
-function TeacherMaterialsView({ user }) {
+function TeacherMaterialsView() {
+  const { courses, courseOptions } = useCourses(API_BASE_URL);
   const [materials, setMaterials] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [form, setForm] = useState({
-    courseId: "algebra",
+    courseId: "",
     title: "",
     description: "",
     type: "link",
@@ -192,6 +191,8 @@ function TeacherMaterialsView({ user }) {
     selectedCourse,
     "all"
   );
+  const selectedFormCourseId =
+    form.courseId || courses[0]?._id || "";
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -200,17 +201,15 @@ function TeacherMaterialsView({ user }) {
 
   function addMaterial(event) {
     event.preventDefault();
-    if (!form.title.trim()) return;
+    if (!selectedFormCourseId || !form.title.trim()) return;
 
     const payload = {
-      courseId: form.courseId,
-      courseTitle: getCourseTitle(form.courseId),
+      courseId: selectedFormCourseId,
       title: form.title.trim(),
       description: form.description.trim(),
       type: form.type,
       url: form.url.trim(),
-      content: form.content.trim(),
-      createdBy: user?.name || "Teacher"
+      content: form.content.trim()
     };
 
     fetch(`${API_BASE_URL}/api/materials`, {
@@ -255,14 +254,14 @@ function TeacherMaterialsView({ user }) {
       <section className="rounded-lg border border-border bg-card p-4">
         <h4 className="mb-3">Filter by Class</h4>
         <div className="flex flex-wrap gap-2">
-          {courses.map((course) => (
+          {courseOptions.map((course) => (
             <button
               className={filterButtonClass(
-                selectedCourse === course.id
+                selectedCourse === course._id
               )}
-              key={course.id}
+              key={course._id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}>
+              onClick={() => setSelectedCourse(course._id)}>
               {course.title}
             </button>
           ))}
@@ -272,6 +271,11 @@ function TeacherMaterialsView({ user }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section className="rounded-lg border border-border bg-card p-6">
           <h2 className="mb-6">Course Materials</h2>
+          {courses.length === 0 ? (
+            <p className="mb-4 text-sm text-muted-foreground">
+              Create a course before adding materials.
+            </p>
+          ) : null}
           <div className="grid gap-3 md:grid-cols-2">
             {visibleMaterials.map((material) => (
               <MaterialCard
@@ -293,15 +297,13 @@ function TeacherMaterialsView({ user }) {
             <select
               className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="courseId"
-              value={form.courseId}
+              value={selectedFormCourseId}
               onChange={handleChange}>
-              {courses
-                .filter((course) => course.id !== "all")
-                .map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.title}
-                  </option>
-                ))}
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.title}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -351,9 +353,7 @@ function TeacherMaterialsView({ user }) {
           </label>
 
           <label className="mb-4 block">
-            <span className="mb-1 block">
-              Content or File Name
-            </span>
+            <span className="mb-1 block">Content or File Name</span>
             <textarea
               className="min-h-24 w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="content"
@@ -364,6 +364,7 @@ function TeacherMaterialsView({ user }) {
 
           <button
             className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+            disabled={courses.length === 0}
             type="submit">
             Add Material
           </button>
@@ -373,9 +374,9 @@ function TeacherMaterialsView({ user }) {
   );
 }
 
-function MaterialsListPage({ view, user }) {
+function MaterialsListPage({ view }) {
   if (view === "teacher") {
-    return <TeacherMaterialsView user={user} />;
+    return <TeacherMaterialsView />;
   }
   return <StudentMaterialsView />;
 }

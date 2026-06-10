@@ -2,20 +2,11 @@ import mongoose from "mongoose";
 
 const announcementSchema = new mongoose.Schema(
   {
-    ownerUserId: {
-      type: String,
-      required: true,
-      index: true
-    },
     courseId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
       required: true,
       index: true
-    },
-    courseTitle: {
-      type: String,
-      required: true,
-      trim: true
     },
     title: {
       type: String,
@@ -42,6 +33,12 @@ const announcementSchema = new mongoose.Schema(
     publishAt: {
       type: Date,
       required: true
+    },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true
     }
   },
   {

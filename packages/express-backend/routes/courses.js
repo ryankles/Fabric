@@ -1,11 +1,12 @@
 import express from "express";
 import Course from "../models/Course.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { listCoursesForUser } from "../utils/courseAccess.js";
 
 const router = express.Router();
 
 router.get("/", requireAuth, async (req, res) => {
-  const courses = await Course.find();
+  const courses = await listCoursesForUser(req.userId);
   res.json(courses);
 });
 

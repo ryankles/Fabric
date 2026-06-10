@@ -1,28 +1,20 @@
 import { useState, useEffect } from "react";
+import {
+  formatDate,
+  getItemCourseTitle,
+  useCourses
+} from "../hooks/useCourses";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.VITE_API_PREFIX ||
   "http://localhost:8000";
 
-const courses = [
-  { id: "all", title: "All Classes" },
-  { id: "algebra", title: "Algebra II" },
-  { id: "geometry", title: "Geometry" },
-  { id: "physics", title: "Physics" },
-  { id: "history", title: "History" }
-];
-
-function getCourseTitle(courseId) {
-  const course = courses.find((item) => item.id === courseId);
-  return course ? course.title : "Class";
-}
-
 function filterItems(items, selectedCourse, selectedType) {
   return items.filter((item) => {
     const matchesCourse =
       selectedCourse === "all" ||
-      item.courseId === selectedCourse;
+      String(item.courseId) === selectedCourse;
     const matchesType =
       selectedType === "all" || item.type === selectedType;
     return matchesCourse && matchesType;
@@ -42,6 +34,7 @@ function typeBadgeClass(type) {
 }
 
 function StudentAnnouncementsView() {
+  const { courses, courseOptions } = useCourses(API_BASE_URL);
   const [updates, setUpdates] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
@@ -75,14 +68,14 @@ function StudentAnnouncementsView() {
       <section className="rounded-lg border border-border bg-card p-4">
         <h4 className="mb-3">Filter by Class</h4>
         <div className="flex flex-wrap gap-2">
-          {courses.map((course) => (
+          {courseOptions.map((course) => (
             <button
               className={filterButtonClass(
-                selectedCourse === course.id
+                selectedCourse === course._id
               )}
-              key={course.id}
+              key={course._id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}>
+              onClick={() => setSelectedCourse(course._id)}>
               {course.title}
             </button>
           ))}
@@ -103,6 +96,12 @@ function StudentAnnouncementsView() {
             <option value="announcement">Announcements</option>
           </select>
         </div>
+
+        {courses.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No enrolled courses yet.
+          </p>
+        ) : null}
 
         <div className="space-y-2">
           {visibleUpdates.map((update) => {
@@ -135,7 +134,7 @@ function StudentAnnouncementsView() {
                       {update.type}
                     </span>
                     <span className="text-sm text-muted-foreground">
-                      {update.courseTitle}
+                      {getItemCourseTitle(update)}
                     </span>
                   </div>
                   <p
@@ -150,7 +149,7 @@ function StudentAnnouncementsView() {
                     {update.body}
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Date: {update.publishAt}
+                    Date: {formatDate(update.publishAt)}
                   </p>
                 </div>
               </article>
@@ -163,10 +162,11 @@ function StudentAnnouncementsView() {
 }
 
 function TeacherAnnouncementsView() {
+  const { courses, courseOptions } = useCourses(API_BASE_URL);
   const [updates, setUpdates] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [form, setForm] = useState({
-    courseId: "algebra",
+    courseId: "",
     title: "",
     body: "",
     type: "announcement",
@@ -187,6 +187,8 @@ function TeacherAnnouncementsView() {
     selectedCourse,
     "all"
   );
+  const selectedFormCourseId =
+    form.courseId || courses[0]?._id || "";
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -195,11 +197,15 @@ function TeacherAnnouncementsView() {
 
   function submitUpdate(event) {
     event.preventDefault();
-    if (!form.title.trim() || !form.body.trim()) return;
+    if (
+      !selectedFormCourseId ||
+      !form.title.trim() ||
+      !form.body.trim()
+    )
+      return;
 
     const payload = {
-      courseId: form.courseId,
-      courseTitle: getCourseTitle(form.courseId),
+      courseId: selectedFormCourseId,
       title: form.title.trim(),
       body: form.body.trim(),
       type: form.type,
@@ -242,14 +248,14 @@ function TeacherAnnouncementsView() {
       <section className="rounded-lg border border-border bg-card p-4">
         <h4 className="mb-3">Filter by Class</h4>
         <div className="flex flex-wrap gap-2">
-          {courses.map((course) => (
+          {courseOptions.map((course) => (
             <button
               className={filterButtonClass(
-                selectedCourse === course.id
+                selectedCourse === course._id
               )}
-              key={course.id}
+              key={course._id}
               type="button"
-              onClick={() => setSelectedCourse(course.id)}>
+              onClick={() => setSelectedCourse(course._id)}>
               {course.title}
             </button>
           ))}
@@ -259,6 +265,11 @@ function TeacherAnnouncementsView() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section className="rounded-lg border border-border bg-card p-6">
           <h2 className="mb-6">Posted Updates</h2>
+          {courses.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Create a course before posting announcements or reminders.
+            </p>
+          ) : null}
           <div className="space-y-3">
             {visibleUpdates.map((update) => (
               <article
@@ -269,7 +280,7 @@ function TeacherAnnouncementsView() {
                     {update.type}
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    {update.courseTitle}
+                    {getItemCourseTitle(update)}
                   </span>
                 </div>
                 <h3>{update.title}</h3>
@@ -277,7 +288,9 @@ function TeacherAnnouncementsView() {
                   {update.body}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-                  <span>Publish: {update.publishAt}</span>
+                  <span>
+                    Publish: {formatDate(update.publishAt)}
+                  </span>
                   <button
                     className="text-destructive hover:underline"
                     type="button"
@@ -300,15 +313,13 @@ function TeacherAnnouncementsView() {
             <select
               className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="courseId"
-              value={form.courseId}
+              value={selectedFormCourseId}
               onChange={handleChange}>
-              {courses
-                .filter((course) => course.id !== "all")
-                .map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.title}
-                  </option>
-                ))}
+              {courses.map((course) => (
+                <option key={course._id} value={course._id}>
+                  {course.title}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -358,6 +369,7 @@ function TeacherAnnouncementsView() {
 
           <button
             className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+            disabled={courses.length === 0}
             type="submit">
             Post Update
           </button>

@@ -1,24 +1,56 @@
 import express from "express";
+import mongoose from "mongoose";
 import Material from "../models/Material.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import {
+  canAccessCourse,
+  getAccessibleCourseIds
+} from "../utils/courseAccess.js";
 
 const router = express.Router();
 
 router.use(requireAuth);
 
+function serializeMaterial(material) {
+  const value = material.toObject();
+  const course = value.courseId;
+  const createdBy = value.createdBy;
+
+  return {
+    ...value,
+    courseId: String(course?._id ?? course),
+    course: course?._id ? course : null,
+    courseTitle: course?.title ?? "Class",
+    createdBy: String(createdBy?._id ?? createdBy),
+    createdByName: createdBy?.name ?? ""
+  };
+}
+
 router.get("/", async (req, res) => {
   try {
-    const query = { ownerUserId: req.userId };
+    const courseIds = await getAccessibleCourseIds(req.userId);
+    const query = { courseId: { $in: courseIds } };
 
     if (req.query.courseId) {
+      if (!mongoose.isValidObjectId(req.query.courseId)) {
+        return res.status(400).json({ error: "Invalid courseId" });
+      }
+
+      if (!courseIds.includes(String(req.query.courseId))) {
+        return res.json([]);
+      }
+
       query.courseId = req.query.courseId;
     }
 
-    const materials = await Material.find(query).sort({
-      createdAt: -1
-    });
+    const materials = await Material.find(query)
+      .populate("courseId", "title code term description")
+      .populate("createdBy", "name email")
+      .sort({
+        createdAt: -1
+      });
 
-    res.json(materials);
+    res.json(materials.map(serializeMaterial));
   } catch {
     res
       .status(500)
@@ -28,12 +60,27 @@ router.get("/", async (req, res) => {
 
 router.get("/course/:courseId", async (req, res) => {
   try {
-    const materials = await Material.find({
-      ownerUserId: req.userId,
-      courseId: req.params.courseId
-    }).sort({ createdAt: -1 });
+    if (!mongoose.isValidObjectId(req.params.courseId)) {
+      return res.status(400).json({ error: "Invalid courseId" });
+    }
 
-    res.json(materials);
+    const hasAccess = await canAccessCourse(
+      req.userId,
+      req.params.courseId
+    );
+
+    if (!hasAccess) {
+      return res.json([]);
+    }
+
+    const materials = await Material.find({
+      courseId: req.params.courseId
+    })
+      .populate("courseId", "title code term description")
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json(materials.map(serializeMaterial));
   } catch {
     res
       .status(500)
@@ -42,38 +89,40 @@ router.get("/course/:courseId", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const {
-    courseId,
-    courseTitle,
-    title,
-    description,
-    type,
-    url,
-    content,
-    createdBy
-  } = req.body;
+  const { courseId, title, description, type, url, content } = req.body;
 
-  if (!courseId || !courseTitle || !title || !createdBy) {
+  if (!courseId || !title) {
     return res.status(400).json({
-      error:
-        "courseId, courseTitle, title, and createdBy are required"
+      error: "courseId and title are required"
     });
   }
 
+  if (!mongoose.isValidObjectId(courseId)) {
+    return res.status(400).json({ error: "Invalid courseId" });
+  }
+
   try {
+    const hasAccess = await canAccessCourse(req.userId, courseId);
+
+    if (!hasAccess) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
     const material = await Material.create({
-      ownerUserId: req.userId,
       courseId,
-      courseTitle,
       title: title.trim(),
       description: description?.trim() ?? "",
       type,
-      url: url ?? "",
-      content: content ?? "",
-      createdBy
+      url: url?.trim() ?? "",
+      content: content?.trim() ?? "",
+      createdBy: req.userId
     });
 
-    res.status(201).json(material);
+    const created = await Material.findById(material._id)
+      .populate("courseId", "title code term description")
+      .populate("createdBy", "name email");
+
+    res.status(201).json(serializeMaterial(created));
   } catch {
     res
       .status(500)
@@ -83,9 +132,11 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
+    const courseIds = await getAccessibleCourseIds(req.userId);
     const result = await Material.deleteOne({
       _id: req.params.id,
-      ownerUserId: req.userId
+      courseId: { $in: courseIds },
+      createdBy: req.userId
     });
 
     if (result.deletedCount === 0) {
