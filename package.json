@@ -4,6 +4,7 @@
     "packages/*"
   ],
   "scripts": {
+    "test": "npm run --workspaces --if-present test",
     "lint": "npm run --workspaces --if-present lint",
     "build": "npm run -w react-frontend build"
   },

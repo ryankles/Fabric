@@ -267,7 +267,8 @@ function TeacherAnnouncementsView() {
           <h2 className="mb-6">Posted Updates</h2>
           {courses.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Create a course before posting announcements or reminders.
+              Create a course before posting announcements or
+              reminders.
             </p>
           ) : null}
           <div className="space-y-3">

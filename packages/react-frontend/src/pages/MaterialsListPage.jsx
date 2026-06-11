@@ -353,7 +353,9 @@ function TeacherMaterialsView() {
           </label>
 
           <label className="mb-4 block">
-            <span className="mb-1 block">Content or File Name</span>
+            <span className="mb-1 block">
+              Content or File Name
+            </span>
             <textarea
               className="min-h-24 w-full rounded-lg border border-border bg-input-background px-3 py-2"
               name="content"

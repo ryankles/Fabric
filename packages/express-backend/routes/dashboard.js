@@ -6,6 +6,7 @@ import Assignment from "../models/Assignment.js";
 import Announcement from "../models/Announcement.js";
 import Grade from "../models/Grade.js";
 import { requireAuth } from "../middleware/requireAuth.js";
+import { calculateGpa } from "../utils/grades.js";
 
 const router = express.Router();
 
@@ -63,15 +64,7 @@ router.get("/", requireAuth, async (req, res) => {
     .sort({ dueDate: 1 })
     .limit(10);
 
-  const gpa =
-    grades.length === 0
-      ? 0
-      : (grades.reduce(
-          (sum, g) => sum + g.score / g.pointsPossible,
-          0
-        ) /
-          grades.length) *
-        4;
+  const gpa = calculateGpa(grades);
 
   res.json({
     user,
