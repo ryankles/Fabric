@@ -13,6 +13,7 @@ import gradesRouter from "./routes/grades.js";
 import announcementsRouter from "./routes/announcements.js";
 import materialsRouter from "./routes/materials.js";
 import dashboardRouter from "./routes/dashboard.js";
+import calendarRouter from "./routes/calendar.js";
 
 dotenv.config();
 
@@ -57,6 +58,7 @@ app.use("/api/grades", gradesRouter);
 app.use("/api/announcements", announcementsRouter);
 app.use("/api/materials", materialsRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/calendar", calendarRouter);
 
 app.listen(process.env.PORT || port, () => {
   console.log(

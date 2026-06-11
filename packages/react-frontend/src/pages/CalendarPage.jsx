@@ -1,170 +1,156 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-function CalendarPage({ view }) {
-  const currentMonth = "May 2026";
-  const daysOfWeek = [
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat"
-  ];
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_PREFIX ||
+  "http://localhost:8000";
 
-  const classes =
-    view === "student"
-      ? [
-          "Mathematics",
-          "English Literature",
-          "Physics",
-          "History",
-          "Spanish",
-          "Art"
-        ]
-      : ["Algebra II", "Geometry", "Calculus", "Pre-Algebra"];
+const daysOfWeek = [
+  "Sun",
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat"
+];
 
-  const [selectedClasses, setSelectedClasses] =
-    useState(classes);
+function CalendarPage() {
+  const [data, setData] = useState({ courses: [], events: [] });
+  const [selectedClasses, setSelectedClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const toggleClass = (className) => {
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/calendar`, {
+      credentials: "include"
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("Failed to load calendar");
+        }
+
+        return res.json();
+      })
+      .then((json) => {
+        setData(json);
+        setSelectedClasses(
+          json.courses.map((course) => String(course._id))
+        );
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  const toggleClass = (classId) => {
     setSelectedClasses((prev) =>
-      prev.includes(className)
-        ? prev.filter((c) => c !== className)
-        : [...prev, className]
+      prev.includes(classId)
+        ? prev.filter((id) => id !== classId)
+        : [...prev, classId]
     );
   };
 
-  const calendarDays = [
-    { day: null },
-    { day: null },
-    { day: null },
-    { day: null },
-    { day: 1 },
-    { day: 2 },
-    { day: 3 },
-    { day: 4 },
-    { day: 5 },
-    { day: 6, event: true },
-    { day: 7 },
-    { day: 8, event: true },
-    { day: 9 },
-    { day: 10 },
-    { day: 11 },
-    { day: 12, event: true },
-    { day: 13 },
-    { day: 14 },
-    { day: 15, event: true },
-    { day: 16 },
-    { day: 17 },
-    { day: 18 },
-    { day: 19 },
-    { day: 20 },
-    { day: 21 },
-    { day: 22 },
-    { day: 23 },
-    { day: 24 },
-    { day: 25 },
-    { day: 26 },
-    { day: 27 },
-    { day: 28 },
-    { day: 29 },
-    { day: 30 },
-    { day: 31 }
-  ];
+  if (loading) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-6">
+        <p>Loading calendar...</p>
+      </div>
+    );
+  }
 
-  const allEvents =
-    view === "student"
-      ? [
-          {
-            date: "May 6",
-            title: "Today - Regular Classes",
-            class: null
-          },
-          {
-            date: "May 8",
-            title: "Math Quiz",
-            class: "Mathematics"
-          },
-          {
-            date: "May 10",
-            title: "English Essay Due",
-            class: "English Literature"
-          },
-          {
-            date: "May 11",
-            title: "Math Quiz - Functions",
-            class: "Mathematics"
-          },
-          {
-            date: "May 12",
-            title: "Science Fair",
-            class: "Physics"
-          },
-          {
-            date: "May 13",
-            title: "Physics Lab Report Due",
-            class: "Physics"
-          },
-          {
-            date: "May 14",
-            title: "Art Project Due",
-            class: "Art"
-          },
-          {
-            date: "May 15",
-            title: "Parent-Teacher Conference",
-            class: null
-          }
-        ]
-      : [
-          {
-            date: "May 6",
-            title: "Today - Regular Schedule",
-            class: null
-          },
-          {
-            date: "May 8",
-            title: "Quiz Day - All Periods",
-            class: null
-          },
-          {
-            date: "May 12",
-            title: "Science Fair - Afternoon",
-            class: null
-          },
-          {
-            date: "May 15",
-            title: "Parent Conferences 2-6 PM",
-            class: null
-          }
-        ];
+  if (error) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-6">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
-  const events = allEvents.filter(
-    (event) =>
-      event.class === null ||
-      selectedClasses.includes(event.class)
+  const now = new Date();
+  const monthStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    1
   );
+  const monthEnd = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0
+  );
+  const currentMonth = now.toLocaleString("en-US", {
+    month: "long",
+    year: "numeric"
+  });
+
+  const events = data.events.filter((event) =>
+    selectedClasses.includes(String(event.courseId))
+  );
+
+  const monthlyEvents = events.filter((event) => {
+    const eventDate = new Date(event.date);
+    return (
+      eventDate.getMonth() === now.getMonth() &&
+      eventDate.getFullYear() === now.getFullYear()
+    );
+  });
+
+  const leadingEmptyDays = Array.from(
+    { length: monthStart.getDay() },
+    (_, index) => ({
+      key: `empty-${index}`,
+      day: null
+    })
+  );
+
+  const datedDays = Array.from(
+    { length: monthEnd.getDate() },
+    (_, index) => {
+      const day = index + 1;
+      const dayEvents = monthlyEvents.filter((event) => {
+        const eventDate = new Date(event.date);
+        return eventDate.getDate() === day;
+      });
+
+      return {
+        key: `day-${day}`,
+        day,
+        eventCount: dayEvents.length,
+        isToday: day === now.getDate()
+      };
+    }
+  );
+
+  const upcomingEvents = events
+    .filter((event) => new Date(event.date) >= now)
+    .slice(0, 8);
 
   return (
     <div className="space-y-6">
-      {view === "student" && (
+      {data.courses.length > 0 && (
         <div className="rounded-lg border border-border bg-card p-4">
           <h4 className="mb-3">Filter by Class</h4>
           <div className="flex flex-wrap gap-2">
-            {classes.map((className) => (
-              <button
-                key={className}
-                type="button"
-                onClick={() => toggleClass(className)}
-                className={
-                  selectedClasses.includes(className)
-                    ? "rounded-lg bg-primary px-3 py-1 text-primary-foreground transition-colors"
-                    : "rounded-lg bg-muted px-3 py-1 text-muted-foreground transition-colors hover:bg-accent"
-                }>
-                {className}
-              </button>
-            ))}
+            {data.courses.map((course) => {
+              const courseId = String(course._id);
+
+              return (
+                <button
+                  key={courseId}
+                  type="button"
+                  onClick={() => toggleClass(courseId)}
+                  className={
+                    selectedClasses.includes(courseId)
+                      ? "rounded-lg bg-primary px-3 py-1 text-primary-foreground transition-colors"
+                      : "rounded-lg bg-muted px-3 py-1 text-muted-foreground transition-colors hover:bg-accent"
+                  }>
+                  {course.title}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -180,22 +166,23 @@ function CalendarPage({ view }) {
                 {day}
               </div>
             ))}
-            {calendarDays.map((item, index) => (
+
+            {[...leadingEmptyDays, ...datedDays].map((item) => (
               <div
-                key={index}
+                key={item.key}
                 className={
                   item.day === null
                     ? "relative flex aspect-square items-center justify-center rounded-lg"
-                    : item.day === 6
+                    : item.isToday
                       ? "relative flex aspect-square items-center justify-center rounded-lg bg-primary text-primary-foreground"
-                      : item.event
+                      : item.eventCount
                         ? "relative flex aspect-square items-center justify-center rounded-lg bg-accent"
-                        : "relative flex aspect-square cursor-pointer items-center justify-center rounded-lg bg-muted transition-colors hover:bg-accent"
+                        : "relative flex aspect-square items-center justify-center rounded-lg bg-muted"
                 }>
                 {item.day && (
                   <>
                     <span>{item.day}</span>
-                    {item.event && item.day !== 6 && (
+                    {item.eventCount > 0 && !item.isToday && (
                       <div className="absolute bottom-1 h-1 w-1 rounded-full bg-primary"></div>
                     )}
                   </>
@@ -208,21 +195,25 @@ function CalendarPage({ view }) {
         <div className="rounded-lg border border-border bg-card p-6">
           <h3 className="mb-4">Upcoming</h3>
           <div className="space-y-3">
-            {events.map((event, index) => (
-              <div
-                key={index}
-                className="rounded-lg bg-muted p-3">
-                <p className="text-muted-foreground">
-                  {event.date}
-                </p>
-                <p>{event.title}</p>
-                {event.class && (
-                  <p className="mt-1 text-muted-foreground">
-                    {event.class}
+            {upcomingEvents.length ? (
+              upcomingEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="rounded-lg bg-muted p-3">
+                  <p className="text-muted-foreground">
+                    {new Date(event.date).toLocaleDateString()}
                   </p>
-                )}
-              </div>
-            ))}
+                  <p>{event.title}</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {event.courseTitle}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">
+                No calendar items yet.
+              </p>
+            )}
           </div>
         </div>
       </div>

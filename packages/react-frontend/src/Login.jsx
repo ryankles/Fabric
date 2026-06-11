@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, toggleLabel, isSignup }) {
+function Login({
+  handleSubmit,
+  buttonLabel,
+  message,
+  toggleText,
+  toggleLink,
+  toggleLabel,
+  isSignup
+}) {
   const [creds, setCreds] = useState({
     name: "",
     email: "",
@@ -37,7 +45,9 @@ function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, tog
           {isSignup && (
             <>
               <div>
-                <label htmlFor="name" className="block text-sm text-foreground mb-1">
+                <label
+                  htmlFor="name"
+                  className="block text-sm text-foreground mb-1">
                   Full Name
                 </label>
                 <input
@@ -53,7 +63,9 @@ function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, tog
               </div>
 
               <div>
-                <label htmlFor="role" className="block text-sm text-foreground mb-1">
+                <label
+                  htmlFor="role"
+                  className="block text-sm text-foreground mb-1">
                   Role
                 </label>
                 <select
@@ -61,8 +73,7 @@ function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, tog
                   id="role"
                   value={creds.role}
                   onChange={handleChange}
-                  className="w-full rounded-lg border border-border bg-input-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
+                  className="w-full rounded-lg border border-border bg-input-background px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
                 </select>
@@ -71,7 +82,9 @@ function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, tog
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm text-foreground mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm text-foreground mb-1">
               Email
             </label>
             <input
@@ -87,7 +100,9 @@ function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, tog
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm text-foreground mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm text-foreground mb-1">
               Password
             </label>
             <input
@@ -103,20 +118,23 @@ function Login({ handleSubmit, buttonLabel, message, toggleText, toggleLink, tog
           </div>
 
           {message && (
-            <p className="text-sm text-destructive text-center">{message}</p>
+            <p className="text-sm text-destructive text-center">
+              {message}
+            </p>
           )}
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-primary py-2.5 text-primary-foreground font-medium hover:opacity-90 transition-opacity"
-          >
+            className="w-full rounded-lg bg-primary py-2.5 text-primary-foreground font-medium hover:opacity-90 transition-opacity">
             {buttonLabel}
           </button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           {toggleText}{" "}
-          <Link to={toggleLink} className="text-primary font-medium hover:underline">
+          <Link
+            to={toggleLink}
+            className="text-primary font-medium hover:underline">
             {toggleLabel}
           </Link>
         </p>

@@ -26,7 +26,8 @@ router.get("/", requireAuth, async (req, res) => {
     const courseIds = courses.map((c) => c._id);
 
     const studentCount = await Enrollment.countDocuments({
-      courseId: { $in: courseIds }
+      courseId: { $in: courseIds },
+      role: "student"
     });
     const announcements = await Announcement.find({
       courseId: { $in: courseIds.map(String) }
@@ -44,7 +45,8 @@ router.get("/", requireAuth, async (req, res) => {
   }
 
   const enrollments = await Enrollment.find({
-    userId
+    userId,
+    role: "student"
   });
 
   const courseIds = enrollments.map((e) => e.courseId);
