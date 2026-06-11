@@ -13,6 +13,28 @@ function toLetterGrade(percentage) {
   return "F";
 }
 
+function getStudentClassAverage(grades, studentId) {
+  const studentGrades = grades.filter(
+    (grade) => String(grade.studentId) === String(studentId)
+  );
+
+  const pointsTotal = studentGrades.reduce(
+    (sum, grade) => sum + Number(grade.pointsPossible || 0),
+    0
+  );
+
+  if (!studentGrades.length || pointsTotal === 0) {
+    return null;
+  }
+
+  const scoreTotal = studentGrades.reduce(
+    (sum, grade) => sum + Number(grade.score || 0),
+    0
+  );
+
+  return Math.round((scoreTotal / pointsTotal) * 100);
+}
+
 function loadTeacherCourses(
   apiBaseUrl,
   setTeacherCourses,
@@ -393,14 +415,11 @@ function GradesPage({ view }) {
                     <div className="space-y-2">
                       {teacherGradebook.roster.map(
                         (student) => {
-                          const studentGrade =
-                            teacherGradebook.grades.find(
-                              (grade) =>
-                                String(grade.studentId) ===
-                                String(
-                                  student.userId?._id ||
-                                    student.userId
-                                )
+                          const studentAverage =
+                            getStudentClassAverage(
+                              teacherGradebook.grades,
+                              student.userId?._id ||
+                                student.userId
                             );
 
                           return (
@@ -415,8 +434,8 @@ function GradesPage({ view }) {
                                   </p>
                                 </div>
                                 <span className="rounded-full bg-card px-3 py-1 text-xs text-muted-foreground">
-                                  {studentGrade
-                                    ? `${studentGrade.percentage}%`
+                                  {studentAverage !== null
+                                    ? `${studentAverage}%`
                                     : "No grade"}
                                 </span>
                               </div>
