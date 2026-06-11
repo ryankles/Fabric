@@ -25,6 +25,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.3.0",
-    "jest": "^30.4.2"
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0"
   }
 }
