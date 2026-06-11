@@ -24,6 +24,15 @@ function filterMaterials(
   });
 }
 
+function filterAssignments(assignments, selectedCourse) {
+  return assignments.filter((assignment) => {
+    return (
+      selectedCourse === "all" ||
+      String(assignment.courseId) === selectedCourse
+    );
+  });
+}
+
 function filterButtonClass(isSelected) {
   return isSelected
     ? "rounded-lg bg-primary px-3 py-1 text-primary-foreground"
@@ -167,6 +176,7 @@ function StudentMaterialsView() {
 function TeacherMaterialsView() {
   const { courses, courseOptions } = useCourses(API_BASE_URL);
   const [materials, setMaterials] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("all");
   const [form, setForm] = useState({
     courseId: "",
@@ -176,6 +186,16 @@ function TeacherMaterialsView() {
     url: "",
     content: ""
   });
+  const [assignmentForm, setAssignmentForm] = useState({
+    courseId: "",
+    title: "",
+    description: "",
+    dueDate: "",
+    pointsPossible: "100",
+    type: "homework"
+  });
+  const [assignmentMessage, setAssignmentMessage] =
+    useState("");
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/materials`, {
@@ -186,13 +206,35 @@ function TeacherMaterialsView() {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/assignments`, {
+      credentials: "include"
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setAssignments)
+      .catch(() => {});
+  }, []);
+
   const visibleMaterials = filterMaterials(
     materials,
     selectedCourse,
     "all"
   );
+  const visibleAssignments = filterAssignments(
+    assignments,
+    selectedCourse
+  );
   const selectedFormCourseId =
     form.courseId || courses[0]?._id || "";
+  const selectedAssignmentCourseId =
+    assignmentForm.courseId || courses[0]?._id || "";
+  const courseTitleById = courses.reduce(
+    (accumulator, course) => {
+      accumulator[String(course._id)] = course.title;
+      return accumulator;
+    },
+    {}
+  );
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -229,6 +271,53 @@ function TeacherMaterialsView() {
             url: "",
             content: ""
           });
+        }
+      })
+      .catch(() => {});
+  }
+
+  function handleAssignmentChange(event) {
+    const { name, value } = event.target;
+    setAssignmentForm({ ...assignmentForm, [name]: value });
+  }
+
+  function addAssignment(event) {
+    event.preventDefault();
+    if (
+      !selectedAssignmentCourseId ||
+      !assignmentForm.title.trim()
+    )
+      return;
+
+    setAssignmentMessage("");
+
+    const payload = {
+      courseId: selectedAssignmentCourseId,
+      title: assignmentForm.title.trim(),
+      description: assignmentForm.description.trim(),
+      dueDate: assignmentForm.dueDate,
+      pointsPossible: Number(assignmentForm.pointsPossible),
+      type: assignmentForm.type
+    };
+
+    fetch(`${API_BASE_URL}/api/assignments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((created) => {
+        if (created) {
+          setAssignments((prev) => [created, ...prev]);
+          setAssignmentForm({
+            ...assignmentForm,
+            title: "",
+            description: "",
+            dueDate: "",
+            pointsPossible: "100"
+          });
+          setAssignmentMessage("Assignment added.");
         }
       })
       .catch(() => {});
@@ -287,91 +376,226 @@ function TeacherMaterialsView() {
           </div>
         </section>
 
-        <form
-          className="rounded-lg border border-border bg-card p-6"
-          onSubmit={addMaterial}>
-          <h2 className="mb-4">Add Material</h2>
+        <div className="space-y-6">
+          <form
+            className="rounded-lg border border-border bg-card p-6"
+            onSubmit={addMaterial}>
+            <h2 className="mb-4">Add Material</h2>
 
-          <label className="mb-3 block">
-            <span className="mb-1 block">Class</span>
-            <select
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
-              name="courseId"
-              value={selectedFormCourseId}
-              onChange={handleChange}>
-              {courses.map((course) => (
-                <option key={course._id} value={course._id}>
-                  {course.title}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label className="mb-3 block">
+              <span className="mb-1 block">Class</span>
+              <select
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="courseId"
+                value={selectedFormCourseId}
+                onChange={handleChange}>
+                {courses.map((course) => (
+                  <option key={course._id} value={course._id}>
+                    {course.title}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="mb-3 block">
-            <span className="mb-1 block">Type</span>
-            <select
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
-              name="type"
-              value={form.type}
-              onChange={handleChange}>
-              <option value="link">Link</option>
-              <option value="text">Text</option>
-              <option value="file">File</option>
-            </select>
-          </label>
+            <label className="mb-3 block">
+              <span className="mb-1 block">Type</span>
+              <select
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="type"
+                value={form.type}
+                onChange={handleChange}>
+                <option value="link">Link</option>
+                <option value="text">Text</option>
+                <option value="file">File</option>
+              </select>
+            </label>
 
-          <label className="mb-3 block">
-            <span className="mb-1 block">Title</span>
-            <input
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
-              type="text"
-              name="title"
-              value={form.title}
-              onChange={handleChange}
-            />
-          </label>
+            <label className="mb-3 block">
+              <span className="mb-1 block">Title</span>
+              <input
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                type="text"
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+              />
+            </label>
 
-          <label className="mb-3 block">
-            <span className="mb-1 block">Description</span>
-            <textarea
-              className="min-h-20 w-full rounded-lg border border-border bg-input-background px-3 py-2"
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-            />
-          </label>
+            <label className="mb-3 block">
+              <span className="mb-1 block">Description</span>
+              <textarea
+                className="min-h-20 w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+              />
+            </label>
 
-          <label className="mb-3 block">
-            <span className="mb-1 block">URL</span>
-            <input
-              className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
-              type="url"
-              name="url"
-              value={form.url}
-              onChange={handleChange}
-            />
-          </label>
+            <label className="mb-3 block">
+              <span className="mb-1 block">URL</span>
+              <input
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                type="url"
+                name="url"
+                value={form.url}
+                onChange={handleChange}
+              />
+            </label>
 
-          <label className="mb-4 block">
-            <span className="mb-1 block">
-              Content or File Name
-            </span>
-            <textarea
-              className="min-h-24 w-full rounded-lg border border-border bg-input-background px-3 py-2"
-              name="content"
-              value={form.content}
-              onChange={handleChange}
-            />
-          </label>
+            <label className="mb-4 block">
+              <span className="mb-1 block">
+                Content or File Name
+              </span>
+              <textarea
+                className="min-h-24 w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="content"
+                value={form.content}
+                onChange={handleChange}
+              />
+            </label>
 
-          <button
-            className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
-            disabled={courses.length === 0}
-            type="submit">
-            Add Material
-          </button>
-        </form>
+            <button
+              className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+              disabled={courses.length === 0}
+              type="submit">
+              Add Material
+            </button>
+          </form>
+
+          <form
+            className="rounded-lg border border-border bg-card p-6"
+            onSubmit={addAssignment}>
+            <h2 className="mb-4">Add Assignment</h2>
+
+            <label className="mb-3 block">
+              <span className="mb-1 block">Class</span>
+              <select
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="courseId"
+                value={selectedAssignmentCourseId}
+                onChange={handleAssignmentChange}>
+                {courses.map((course) => (
+                  <option key={course._id} value={course._id}>
+                    {course.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="mb-3 block">
+              <span className="mb-1 block">Type</span>
+              <select
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="type"
+                value={assignmentForm.type}
+                onChange={handleAssignmentChange}>
+                <option value="homework">Homework</option>
+                <option value="quiz">Quiz</option>
+                <option value="exam">Exam</option>
+                <option value="project">Project</option>
+                <option value="lab">Lab</option>
+              </select>
+            </label>
+
+            <label className="mb-3 block">
+              <span className="mb-1 block">Title</span>
+              <input
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                type="text"
+                name="title"
+                value={assignmentForm.title}
+                onChange={handleAssignmentChange}
+              />
+            </label>
+
+            <label className="mb-3 block">
+              <span className="mb-1 block">Description</span>
+              <textarea
+                className="min-h-20 w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                name="description"
+                value={assignmentForm.description}
+                onChange={handleAssignmentChange}
+              />
+            </label>
+
+            <label className="mb-3 block">
+              <span className="mb-1 block">Due Date</span>
+              <input
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                type="date"
+                name="dueDate"
+                value={assignmentForm.dueDate}
+                onChange={handleAssignmentChange}
+              />
+            </label>
+
+            <label className="mb-4 block">
+              <span className="mb-1 block">
+                Points Possible
+              </span>
+              <input
+                className="w-full rounded-lg border border-border bg-input-background px-3 py-2"
+                type="number"
+                min="1"
+                step="1"
+                name="pointsPossible"
+                value={assignmentForm.pointsPossible}
+                onChange={handleAssignmentChange}
+              />
+            </label>
+
+            <button
+              className="w-full rounded-lg bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+              disabled={courses.length === 0}
+              type="submit">
+              Add Assignment
+            </button>
+
+            {assignmentMessage ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                {assignmentMessage}
+              </p>
+            ) : null}
+          </form>
+        </div>
       </div>
+
+      <section className="rounded-lg border border-border bg-card p-6">
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <h2>Course Assignments</h2>
+          <span className="text-sm text-muted-foreground">
+            {visibleAssignments.length} total
+          </span>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          {visibleAssignments.map((assignment) => (
+            <article
+              key={assignment._id}
+              className="rounded-lg bg-muted p-4">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p>{assignment.title}</p>
+                <span className="rounded-full bg-card px-2 py-1 text-xs font-medium capitalize text-muted-foreground">
+                  {assignment.type}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {courseTitleById[String(assignment.courseId)] ||
+                  "Class"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Due {assignment.dueDate?.slice(0, 10)} ·{" "}
+                {assignment.pointsPossible} points
+              </p>
+              {assignment.description ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {assignment.description}
+                </p>
+              ) : null}
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

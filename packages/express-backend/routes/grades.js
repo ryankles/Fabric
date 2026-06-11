@@ -1,5 +1,6 @@
 import express from "express";
 import Grade from "../models/Grade.js";
+import Assignment from "../models/Assignment.js";
 import { requireAuth } from "../middleware/requireAuth.js";
 import User from "../models/User.js";
 import Course from "../models/Course.js";
@@ -23,9 +24,69 @@ router.get("/", requireAuth, async (req, res) => {
   }
 
   if (user.role === "teacher") {
+    const { courseId } = req.query;
     const courses = await Course.find({
       teacherId: req.userId
     }).select("_id title code");
+
+    if (courseId) {
+      const course = await Course.findById(courseId).select(
+        "_id title code teacherId"
+      );
+
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      if (String(course.teacherId) !== req.userId) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+
+      const [roster, assignments, grades] = await Promise.all([
+        Enrollment.find({
+          courseId,
+          role: "student"
+        }).populate("userId", "name email role"),
+        Assignment.find({
+          courseId
+        })
+          .select("_id title dueDate pointsPossible type")
+          .sort({ dueDate: 1 }),
+        Grade.find({ courseId })
+          .populate("assignmentId", "title dueDate pointsPossible type")
+          .populate("studentId", "name email role")
+          .sort({ updatedAt: -1 })
+      ]);
+
+      return res.json({
+        course: {
+          _id: course._id,
+          title: course.title,
+          code: course.code
+        },
+        roster: roster.map((enrollment) => ({
+          _id: enrollment._id,
+          userId: enrollment.userId,
+          name: enrollment.userId?.name || "Student",
+          email: enrollment.userId?.email || ""
+        })),
+        assignments,
+        grades: grades.map((grade) => ({
+          _id: grade._id,
+          assignmentId: grade.assignmentId?._id || grade.assignmentId,
+          assignmentTitle: grade.assignmentId?.title || "",
+          studentId: grade.studentId?._id || grade.studentId,
+          studentName: grade.studentId?.name || "Student",
+          score: grade.score,
+          pointsPossible: grade.pointsPossible,
+          percentage: Math.round(
+            (grade.score / grade.pointsPossible) * 100
+          ),
+          feedback: grade.feedback,
+          updatedAt: grade.updatedAt
+        }))
+      });
+    }
 
     const courseIds = courses.map((course) => course._id);
 
