@@ -9,7 +9,9 @@
     "lint": "npx eslint . && npm run format",
     "preview": "vite preview",
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ../../.prettierrc",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cypress:open": "cypress open",
+    "e2e": "cypress run"
   },
   "dependencies": {
     "react": "^19.2.4",
@@ -27,6 +29,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "cors": "^2.8.6",
+    "cypress": "^15.17.0",
     "eslint": "^9.39.4",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
