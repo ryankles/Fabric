@@ -5,13 +5,19 @@ const materialSchema = new mongoose.Schema(
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
-      required: true
+      required: true,
+      index: true
     },
     title: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
-    description: String,
+    description: {
+      type: String,
+      default: "",
+      trim: true
+    },
     type: {
       type: String,
       enum: [
@@ -19,16 +25,25 @@ const materialSchema = new mongoose.Schema(
         "video",
         "link",
         "note",
-        "other"
+        "other",
+        "text",
+        "file"
       ],
-      default: "document"
+      default: "link"
     },
-    url: String,
-    content: String,
+    url: {
+      type: String,
+      default: ""
+    },
+    content: {
+      type: String,
+      default: ""
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
+      index: true
     }
   },
   {
@@ -36,7 +51,4 @@ const materialSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model(
-  "Material",
-  materialSchema
-);
+export default mongoose.model("Material", materialSchema);

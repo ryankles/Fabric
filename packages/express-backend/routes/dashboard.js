@@ -29,9 +29,8 @@ router.get("/", requireAuth, async (req, res) => {
       courseId: { $in: courseIds }
     });
     const announcements = await Announcement.find({
-      courseId: { $in: courseIds }
+      courseId: { $in: courseIds.map(String) }
     })
-      .populate("courseId", "title code")
       .sort({ publishAt: -1 })
       .limit(10);
 
